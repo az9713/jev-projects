@@ -24,6 +24,21 @@ Every page puts the measured latency on screen. The videos show demos from machi
 | `hooks/skill-router.mjs` | – | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
 
+### Videos
+
+Screen recordings of four pages, 5 to 18 s each, silent. Click a picture to play the video.
+
+<table>
+<tr>
+<td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_wiki_race.mp4"><img src="docs/video/jev_wiki_race.jpg" alt="Wiki race: Coffee to Napoleon in 4 hops" width="100%"></a><br><b>Wiki race</b>, 5 s: Coffee to Napoleon in 4 hops</td>
+<td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_town.mp4"><img src="docs/video/jev_town.jpg" alt="Town of agents: 50 characters react to a fire at the mill" width="100%"></a><br><b>Town of agents</b>, 14 s: 50 characters react to a fire at the mill</td>
+</tr>
+<tr>
+<td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_chess.mp4"><img src="docs/video/jev_chess.jpg" alt="Bullet chess: Jev as white against a random mover" width="100%"></a><br><b>Bullet chess</b>, 12 s: Jev as white against a random mover</td>
+<td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_sort.mp4"><img src="docs/video/jev_sort.jpg" alt="Sort at scale: 1000 messages into five queues" width="100%"></a><br><b>Sort at scale</b>, 18 s: 1000 messages into five queues</td>
+</tr>
+</table>
+
 The **Page** links open each project's own HTML on GitHub Pages. Pages has no Node server and no gateway key, so each page there replays one real run recorded on 2026-09-19: the same page, fed the `/state` frames that were recorded, with Jev's real answers, timings, and cost. The button restarts the replay. `node record.mjs [name]` records a fresh run into `docs/<name>/<name>.html`.
 
 ## One real call per project
