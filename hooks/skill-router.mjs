@@ -4,7 +4,7 @@
 // Hook:  echo '{"prompt":"wrap up my day"}' | node --env-file=.env hooks/skill-router.mjs --hook   → prints "Use skill X" or nothing
 // Check: node --env-file=.env hooks/skill-router.mjs --check   → six prompts with a known skill; five must match
 import assert from "node:assert/strict";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { ask, top } from "../lib.mjs";
@@ -17,12 +17,12 @@ const INSTRUCTIONS = "Which skill should the coding agent load to handle this us
 
 async function loadSkills() {
   const out = { none: "No skill applies; answer or act directly" };
-  for (const d of await readdir(SKILLS_DIR, { withFileTypes: true })) {
-    if (!d.isDirectory()) continue;
+  for (const name of await readdir(SKILLS_DIR)) { // stat, not dirent flags: 48 of the skill folders are links, which readdir reports as non-directories
     try {
-      const fm = (await readFile(join(SKILLS_DIR, d.name, "SKILL.md"), "utf8")).match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
+      if (!(await stat(join(SKILLS_DIR, name))).isDirectory()) continue;
+      const fm = (await readFile(join(SKILLS_DIR, name, "SKILL.md"), "utf8")).match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
       const desc = fm.match(/^description:\s*(.*)$/m)?.[1]?.replace(/^["']|["']$/g, "").trim();
-      if (desc) out[d.name] = desc.slice(0, MAX_DESC);
+      if (desc) out[name] = desc.slice(0, MAX_DESC);
     } catch {}
   }
   const names = Object.keys(out);

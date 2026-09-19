@@ -21,7 +21,7 @@ Every page puts the measured latency on screen. The videos show demos from machi
 | `sort/` | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
 | `logs/` | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
 | `lane/` | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
-| `hooks/skill-router.mjs` | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 100 skills as options, 7.3k tokens, $0.0003 per prompt |
+| `hooks/skill-router.mjs` | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
 
 ## Run
