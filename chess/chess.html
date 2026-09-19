@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev Bullet Chess</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:18px; margin:0 0 12px; color:var(--accent2); }
+  form { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  input, select { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; }
+  button { background:var(--accent2); color:#0f172a; border:0; border-radius:8px; padding:8px 18px; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .grid { display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:start; }
+  @media (max-width:760px) { .grid { grid-template-columns:1fr; } }
+  canvas { background:var(--card); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .clocks { display:flex; justify-content:space-between; font-family:ui-monospace, Consolas, monospace; font-size:22px; margin:8px 0; }
+  .clocks .jev { color:var(--accent); }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
+  .card h2 { font-size:14px; margin:0 0 8px; }
+  .stats { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--muted); font-size:13px; }
+  .stats b { color:var(--text); }
+  .bars { display:grid; grid-template-columns:70px 1fr 40px; gap:3px 8px; font-size:12px; align-items:center; }
+  .bar { background:#0f172a; border-radius:4px; overflow:hidden; height:12px; }
+  .bar i { display:block; height:100%; background:var(--accent2); }
+  .pick .bar i { background:var(--accent); }
+  .moves { font-family:ui-monospace, Consolas, monospace; font-size:13px; line-height:1.7; max-height:260px; overflow:auto; }
+  .moves .jev { color:var(--accent); }
+  .result { color:var(--accent2); font-weight:700; }
+  .err { color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev bullet chess</h1>
+  <form id="f">
+    <label>Jev plays <select id="jev"><option value="w">white</option><option value="b">black</option></select></label>
+    <label>against <input id="opp" value="random" list="opps" size="26" title="random, or a gateway model id"><datalist id="opps"><option value="random"><option value="openai/gpt-5-nano"><option value="anthropic/claude-sonnet-5"><option value="anthropic/claude-fable-5.1"></datalist></label>
+    <button id="go">New game</button>
+  </form>
+  <div class="grid">
+    <div>
+      <div class="clocks"><span id="cw">1:00.0</span><span id="cb">1:00.0</span></div>
+      <canvas id="board" width="480" height="480"></canvas>
+    </div>
+    <div>
+      <div class="card"><div class="stats" id="stats"></div></div>
+      <div class="card"><h2 id="lasth">Jev's last decision</h2><div class="bars" id="bars"></div></div>
+      <div class="card"><h2>Moves</h2><div class="moves" id="moves"></div></div>
+    </div>
+  </div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const GLYPH = { K: "♔", Q: "♕", R: "♖", B: "♗", N: "♘", P: "♙", k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+  const ctx = $("board").getContext("2d");
+  function drawBoard(fen) {
+    const rows = fen.split(" ")[0].split("/"), sq = 60;
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+      ctx.fillStyle = (r + c) % 2 ? "#334155" : "#94a3b8";
+      ctx.fillRect(c * sq, r * sq, sq, sq);
+    }
+    ctx.font = "44px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    rows.forEach((row, r) => { let c = 0; for (const ch of row) { if (ch >= "1" && ch <= "8") { c += Number(ch); continue; }
+      ctx.fillStyle = ch === ch.toUpperCase() ? "#f8fafc" : "#0f172a"; ctx.fillText(GLYPH[ch], c * sq + sq / 2, r * sq + sq / 2 + 3); c++; } });
+  }
+  const clock = (ms) => { const s = Math.max(0, ms) / 1000; return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`; };
+  let last = "";
+  async function poll() {
+    const s = await (await fetch("/state")).json();
+    const key = JSON.stringify(s);
+    if (key !== last) { last = key; render(s); }
+    $("go").disabled = s.running;
+    setTimeout(poll, 300);
+  }
+  function render(s) {
+    drawBoard(s.fen);
+    $("cw").textContent = clock(s.clocks.w); $("cb").textContent = clock(s.clocks.b);
+    $("cw").className = s.jev === "w" ? "jev" : ""; $("cb").className = s.jev === "b" ? "jev" : "";
+    const jm = s.moves.filter((m) => m.by === "jev");
+    const mean = jm.length ? Math.round(jm.reduce((a, m) => a + m.ms, 0) / jm.length) : 0;
+    $("stats").innerHTML = `<span>Jev is <b>${s.jev === "w" ? "white" : "black"}</b> vs <b>${esc(s.opponent || "random")}</b></span><span><b>${s.moves.length}</b> plies</span>` +
+      `<span>Jev mean <b>${mean} ms</b> per move</span><span><b>$${(s.usd || 0).toFixed(5)}</b></span>` +
+      (s.result ? `<span class="result">${esc(s.result)}</span>` : s.running ? "<span>playing…</span>" : "<span>Press New game.</span>");
+    const l = jm.at(-1);
+    $("lasth").textContent = l ? `Jev's last decision: ${l.san} from ${l.options} legal moves, ${l.ms} ms, conf ${l.conf ?? "-"}` : "Jev's last decision";
+    $("bars").innerHTML = l ? l.top.map(([m, p]) => `<span class="${m === l.san ? "pick" : ""}" style="display:contents"><span>${esc(m)}</span><span class="bar"><i style="width:${Math.round(p * 100)}%"></i></span><span>${p.toFixed(2)}</span></span>`).join("") : "";
+    const w = s.jev === "w";
+    $("moves").innerHTML = s.moves.map((m, i) => `${i % 2 ? "" : `${i / 2 + 1}. `}<span class="${m.by === "jev" ? "jev" : ""}" title="${m.ms} ms${m.note ? ", " + esc(m.note) : ""}">${esc(m.san)}</span> `).join("");
+    $("moves").scrollTop = 1e9;
+  }
+  $("f").onsubmit = async (e) => {
+    e.preventDefault(); $("go").disabled = true;
+    const r = await (await fetch("/new", { method: "POST", body: JSON.stringify({ jev: $("jev").value, opponent: $("opp").value.trim() }) })).json();
+    if (r.error) { $("stats").innerHTML = `<span class="err">${esc(r.error)}</span>`; $("go").disabled = false; }
+  };
+  poll();
+</script>
+</body>
+</html>

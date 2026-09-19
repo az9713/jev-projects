@@ -8,7 +8,14 @@ export const JEV = "typesafe-ai/jev";
 // One Jev decision. Returns the answers, the confidence map, wall ms, and gateway market cost in dollars.
 export async function ask(state, questions) {
   const t = performance.now();
-  const ev = await evaluate({ model: JEV, state, questions });
+  let ev;
+  try { ev = await evaluate({ model: JEV, state, questions }); }
+  catch (e) {
+    // ponytail: ai 7.0.107 throws when Jev's choice is not the top probability after 2-decimal rounding (e.g. 0.13 chosen, 0.14 shown).
+    // Keep Jev's answer; the confidence and cost metadata are lost on this path.
+    if (e.name === "AI_InvalidResponseDataError" && e.data) return { answers: e.data, conf: {}, ms: Math.round(performance.now() - t), usd: 0, tokens: 0, note: "tie after rounding" };
+    throw e;
+  }
   return {
     answers: ev.answers,
     conf: ev.providerMetadata?.typesafe?.confidence ?? {},
