@@ -1,6 +1,6 @@
-// Sort at scale: thousands of short texts into five bins, 20 Jev calls in parallel per batch.
+// Sort at scale: thousands of short texts into five bins, 20 Jev calls in flight.
 // Gen:   node --env-file=.env sort/sort.mjs --gen          → writes sort/items.json (300 labelled items) once, with a chat model
-// Page:  node --env-file=.env sort/sort.mjs [--batch 20]   → http://localhost:3004
+// Page:  node --env-file=.env sort/sort.mjs [--batch 20]   → http://localhost:3004 (--batch: calls in flight)
 // Check: node --env-file=.env sort/sort.mjs --check        → one pass over items.json; accuracy on the labels must exceed 90%
 import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
@@ -13,11 +13,11 @@ const QUESTION = {
     type: "choice",
     instructions: "Which queue should this incoming message go to?",
     criteria: {
-      billing: "Payments, invoices, refunds, subscription charges, pricing",
+      billing: "An existing account's money: a charge, invoice, receipt, refund, tax form, or payment method",
       technical: "Bugs, errors, outages, setup problems, how a feature works",
-      sales: "Buying, upgrading, demos, quotes, partnership or enterprise interest",
+      sales: "Before buying: wants to buy, upgrade, compare plans or prices, see a demo, get a quote, evaluate the product, or ask about contract terms",
       spam: "Unsolicited promotion, scams, nonsense, or unrelated mass mail",
-      other: "Anything else: feedback, thanks, general questions, job applications",
+      other: "Anything else: feedback, thanks, general questions, partnerships, sponsorships, events, research, job applications",
     },
   },
 };
@@ -26,34 +26,34 @@ const GEN_MODEL = "anthropic/claude-sonnet-5";
 const GEN_PROMPT = `Write 300 short customer messages to a software company, one sentence each, 60 messages per queue for these five queues: ${BINS.join(", ")}.
 Vary tone, length and topic strongly; some messages should be ambiguous but still have one best queue. Output only JSON, no prose, no code fence:
 [{"text":"...","label":"billing"}, ...]`;
-const BATCH = Number(process.argv[process.argv.indexOf("--batch") + 1]) || 20; // ponytail: 20 in flight keeps under the 20 requests/s docs limit at ~1 s per call
+const WORKERS = Number(process.argv[process.argv.indexOf("--batch") + 1]) || 20; // calls in flight; 20 stays under the 20 requests/s docs limit at ~1 s per call
 
 const jsonFile = new URL("./items.json", import.meta.url);
 const args = process.argv.slice(2);
 
-// Sort `items` in batches. onBatch(state) after every batch. Returns the final state.
-export async function sortAll(items, onBatch = () => {}) {
+// Sort `items` with WORKERS calls in flight. onItem(state) after every item. Returns the final state.
+// ponytail: a worker pool, not batch-and-wait; a batch of 20 waits for its slowest call (5 to 7 s tail) and ran at 3.5 items/s
+export async function sortAll(items, onItem = () => {}) {
   const t0 = performance.now();
-  const s = { total: items.length, done: 0, ok: 0, correct: 0, labelled: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], usd: 0, perSec: 0, ms: 0, running: true };
-  for (let i = 0; i < items.length; i += BATCH) {
-    const batch = items.slice(i, i + BATCH);
-    const rs = await Promise.allSettled(batch.map((it) => ask({ message: it.text }, QUESTION)));
-    rs.forEach((r, j) => {
-      const it = batch[j];
-      s.done++;
-      if (r.status === "rejected") { s.recent.unshift({ text: it.text, bin: null, p: 0, error: String(r.reason?.message ?? r.reason).slice(0, 80) }); return; }
-      const a = r.value.answers.bin, p = a.probabilities[a.choice];
-      s.ok++; s.counts[a.choice]++; s.usd += r.value.usd; s.conf[Math.min(9, Math.floor(p * 10))]++;
-      if (it.label) { s.labelled++; s.correct += a.choice === it.label; }
-      s.recent.unshift({ text: it.text, bin: a.choice, p, label: it.label ?? null, ms: r.value.ms });
-    });
+  const s = { total: items.length, done: 0, ok: 0, correct: 0, labelled: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], misses: [], usd: 0, perSec: 0, ms: 0, running: true };
+  let next = 0;
+  const one = async (it) => {
+    try {
+      const r = await ask({ message: it.text }, QUESTION);
+      const a = r.answers.bin, p = a.probabilities[a.choice];
+      s.ok++; s.counts[a.choice]++; s.usd += r.usd; s.conf[Math.min(9, Math.floor(p * 10))]++;
+      if (it.label) { s.labelled++; s.correct += a.choice === it.label; if (a.choice !== it.label) s.misses.push({ text: it.text, bin: a.choice, p, label: it.label }); }
+      s.recent.unshift({ text: it.text, bin: a.choice, p, label: it.label ?? null, ms: r.ms });
+    } catch (e) { s.recent.unshift({ text: it.text, bin: null, p: 0, error: String(e.message ?? e).slice(0, 80) }); }
+    s.done++;
     s.recent.length = Math.min(s.recent.length, 40);
     s.ms = Math.round(performance.now() - t0);
     s.perSec = +(s.done / (s.ms / 1000)).toFixed(1);
-    onBatch(s);
-  }
+    onItem(s);
+  };
+  await Promise.all(Array.from({ length: WORKERS }, async () => { while (next < items.length) await one(items[next++]); }));
   s.running = false;
-  onBatch(s);
+  onItem(s);
   return s;
 }
 
@@ -69,8 +69,7 @@ if (args.includes("--gen")) {
     const s = await sortAll(items);
     const acc = s.correct / s.labelled;
     console.log(`${s.ok}/${s.total} sorted in ${(s.ms / 1000).toFixed(1)} s, ${s.perSec}/s, accuracy ${(acc * 100).toFixed(1)}% on ${s.labelled} labelled, $${s.usd.toFixed(4)}, bins ${JSON.stringify(s.counts)}`);
-    const wrong = s.recent.filter((r) => r.label && r.bin !== r.label).slice(0, 5);
-    for (const w of wrong) console.log(`  miss: "${w.text.slice(0, 70)}" → ${w.bin} (p ${w.p}), label ${w.label}`);
+    for (const w of s.misses.slice(0, 8)) console.log(`  miss: "${w.text.slice(0, 70)}" → ${w.bin} (p ${w.p}), label ${w.label}`);
     assert.ok(acc > 0.9, `accuracy ${(acc * 100).toFixed(1)}% is not above 90%`);
   } else {
     let state = { running: false, total: items.length, done: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], usd: 0, perSec: 0, ms: 0, bins: BINS };

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev Log Monitor</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:18px; margin:0 0 12px; color:var(--accent2); }
+  .banner { display:none; background:#7f1d1d; color:#fee2e2; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-weight:600; }
+  .banner.on { display:block; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:12px; font-size:13px; }
+  .stats { display:flex; flex-wrap:wrap; gap:4px 16px; color:var(--muted); }
+  .stats b { color:var(--text); }
+  canvas { width:100%; height:140px; background:#0f172a; border-radius:6px; }
+  .log { font-family:ui-monospace, Consolas, monospace; font-size:12.5px; line-height:1.55; max-height:480px; overflow:auto; }
+  .log div { display:grid; grid-template-columns:44px 40px 62px 1fr 52px; gap:8px; padding:1px 4px; border-radius:3px; }
+  .s0 { color:#94a3b8; } .s1 { color:#facc15; } .s2 { color:#fb923c; background:rgba(251,146,60,.08); } .s3 { color:#f87171; background:rgba(248,113,113,.12); }
+  .err { color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev live log monitor</h1>
+  <div class="banner" id="banner"></div>
+  <div class="card"><div class="stats" id="stats">Waiting for lines…</div></div>
+  <div class="card"><canvas id="chart" width="1000" height="140"></canvas></div>
+  <div class="card"><div class="log" id="log"></div></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const cls = (s) => s == null ? "s0" : s >= 2.5 ? "s3" : s >= 1.5 ? "s2" : s >= 0.7 ? "s1" : "s0";
+  const ctx = $("chart").getContext("2d");
+  function chart(series) {
+    const W = 1000, H = 140; ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = "#334155"; [1, 2, 3].forEach((v) => { const y = H - 10 - v / 3 * (H - 20); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); });
+    ctx.strokeStyle = "#fb923c"; ctx.lineWidth = 2; ctx.beginPath();
+    series.forEach(([, s], i) => { const x = i / Math.max(1, series.length - 1) * W, y = H - 10 - s / 3 * (H - 20); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke(); ctx.lineWidth = 1;
+    ctx.fillStyle = "#94a3b8"; ctx.font = "11px system-ui"; ctx.fillText("severity 0 to 3, last 300 lines", 6, 12);
+  }
+  async function poll() {
+    const s = await (await fetch("/state")).json();
+    const ms = s.lines.filter((l) => l.ms).map((l) => l.ms);
+    $("stats").innerHTML = `<span><b>${s.rate}</b> lines/s generated</span><span><b>${s.count}</b> scored</span><span><b>${s.inflight}</b> in flight</span>` +
+      `<span>mean <b>${ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0} ms</b> per line</span><span><b>$${s.usd.toFixed(4)}</b></span>`;
+    const b = s.paged && Date.now() - s.paged.at < 15000;
+    $("banner").className = "banner" + (b ? " on" : "");
+    if (b) $("banner").textContent = `PAGE ON-CALL (p ${s.paged.page.toFixed(2)}): ${s.paged.line}`;
+    chart(s.series);
+    $("log").innerHTML = s.lines.map((l) => l.error ? `<div class="err"><span>${l.n}</span><span></span><span></span><span>${esc(l.line)}</span><span>${esc(l.error)}</span></div>` :
+      `<div class="${cls(l.severity)}"><span>${l.severity.toFixed(2)}</span><span>${l.page >= 0.5 ? "PAGE" : ""}</span><span>${l.category}</span><span>${esc(l.line)}</span><span>${l.ms} ms</span></div>`).join("");
+    setTimeout(poll, 500);
+  }
+  poll();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Town of agents: 50 characters hear one event and every one of them decides in one parallel burst of Jev calls.
 // Gen:   node --env-file=.env town/town.mjs --gen          → writes town/town.json once, with a chat model
 // Page:  node --env-file=.env town/town.mjs [--batch N]    → http://localhost:3002 (N: calls per batch; default: all 50 at once)
-// Check: node --env-file=.env town/town.mjs --check        → two events; the most common action must differ; the baker must not ignore free bread
+// Check: node --env-file=.env town/town.mjs --check        → two events; the wolf must raise more flee+warn, the bread more join; the baker must not ignore free bread
 import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import { generateText } from "ai";

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev Lane Sim</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:18px; margin:0 0 12px; color:var(--accent2); }
+  form { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  input, select { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; }
+  button { background:var(--accent2); color:#0f172a; border:0; border-radius:8px; padding:8px 18px; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .grid { display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start; }
+  @media (max-width:760px) { .grid { grid-template-columns:1fr; } }
+  canvas { background:var(--card); border:1px solid var(--border); border-radius:8px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:12px; font-size:13px; }
+  .card h2 { font-size:14px; margin:0 0 8px; }
+  .stats { display:flex; flex-wrap:wrap; gap:4px 16px; color:var(--muted); }
+  .stats b { color:var(--text); }
+  .bars { display:grid; grid-template-columns:80px 1fr 40px; gap:3px 8px; align-items:center; }
+  .bar { background:#0f172a; border-radius:4px; overflow:hidden; height:12px; }
+  .bar i { display:block; height:100%; background:var(--accent2); }
+  .pick .bar i { background:var(--accent); }
+  .spark { width:100%; height:60px; background:#0f172a; border-radius:6px; }
+  .err { color:var(--err); }
+  .late { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev lane sim</h1>
+  <form id="f">
+    <label>Driver <select id="driver"><option value="jev">Jev</option><option value="rules">rule-based</option></select></label>
+    <label>Script seed <input id="seed" type="number" value="42" style="width:80px"></label>
+    <button id="go">Start</button>
+    <span id="hint" style="color:var(--muted);font-size:13px"></span>
+  </form>
+  <div class="grid">
+    <div><canvas id="road" width="300" height="520"></canvas></div>
+    <div>
+      <div class="card"><div class="stats" id="stats">Press Start. One decision per tick; the road moves at the car's speed.</div></div>
+      <div class="card"><h2 id="acth">Action probabilities</h2><div class="bars" id="bars"></div></div>
+      <div class="card"><h2>Decision latency per tick (ms)</h2><canvas id="spark" class="spark" width="600" height="60"></canvas></div>
+    </div>
+  </div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const ACTIONS = ["forward", "ease_left", "ease_right", "brake", "stop"];
+  const rc = $("road").getContext("2d"), sc = $("spark").getContext("2d");
+  const W = 300, H = 520, LW = W / 3, CELL = 40; // one car length = 40 px; the car sits 60 px above the bottom
+  let offset = 0, lastTick = -1;
+  function drawRoad(s) {
+    rc.clearRect(0, 0, W, H);
+    rc.strokeStyle = "#475569"; rc.setLineDash([16, 16]); rc.lineDashOffset = -offset;
+    for (let l = 1; l < 3; l++) { rc.beginPath(); rc.moveTo(l * LW, 0); rc.lineTo(l * LW, H); rc.stroke(); }
+    rc.setLineDash([]);
+    const carY = H - 60;
+    for (const o of s.world.obstacles) {
+      const x = o.lane * LW + LW / 2, y = carY - o.distance * CELL;
+      rc.fillStyle = o.type === "cone" ? "#fb923c" : "#94a3b8";
+      if (o.type === "cone") { rc.beginPath(); rc.moveTo(x, y - 14); rc.lineTo(x + 12, y + 12); rc.lineTo(x - 12, y + 12); rc.fill(); }
+      else rc.fillRect(x - 16, y - 20, 32, 40);
+    }
+    rc.fillStyle = "#2dd4bf"; rc.fillRect(s.world.lane * LW + LW / 2 - 16, carY - 20, 32, 40);
+    rc.fillStyle = "#0f172a"; rc.font = "12px system-ui"; rc.textAlign = "center"; rc.fillText(s.world.speed, s.world.lane * LW + LW / 2, carY + 4);
+  }
+  function drawSpark(ms, tickMs) {
+    sc.clearRect(0, 0, 600, 60);
+    const mx = Math.max(tickMs, ...ms, 1);
+    sc.strokeStyle = "#f87171"; sc.beginPath(); sc.moveTo(0, 60 - tickMs / mx * 56); sc.lineTo(600, 60 - tickMs / mx * 56); sc.stroke();
+    sc.fillStyle = "#2dd4bf";
+    ms.slice(-60).forEach((m, i) => sc.fillRect(i * 10, 60 - m / mx * 56, 8, m / mx * 56));
+    sc.fillStyle = "#94a3b8"; sc.font = "10px system-ui"; sc.fillText(`red line: tick ${tickMs} ms`, 4, 10);
+  }
+  let state = null;
+  async function poll() {
+    const s = await (await fetch("/state")).json();
+    state = s;
+    if (s.tick !== lastTick) { lastTick = s.tick; render(s); }
+    $("go").disabled = !s.done;
+    setTimeout(poll, 200);
+  }
+  function render(s) {
+    const mean = s.ms.length ? Math.round(s.ms.reduce((a, b) => a + b, 0) / s.ms.length) : 0;
+    $("stats").innerHTML = `<span>driver <b>${s.driver || "-"}</b></span><span>tick <b>${s.tick}/${s.ticks}</b></span><span>speed <b>${s.world.speed}</b></span><span>collisions <b>${s.collisions}</b></span>` +
+      `<span class="late">late answers <b>${s.late}</b></span><span>mean <b>${mean} ms</b> per decision</span><span><b>$${(s.usd || 0).toFixed(4)}</b></span>` + (s.done && s.tick ? "<span>done</span>" : "");
+    $("acth").textContent = s.last ? `Action: ${s.last.action}${s.last.late ? " (repeated, answer was late)" : ""} · danger ${s.danger == null ? "-" : s.danger.toFixed(2)}` : "Action probabilities";
+    $("bars").innerHTML = s.probs ? ACTIONS.map((a) => `<span class="${a === s.last?.action ? "pick" : ""}" style="display:contents"><span>${a}</span><span class="bar"><i style="width:${Math.round((s.probs[a] || 0) * 100)}%"></i></span><span>${(s.probs[a] || 0).toFixed(2)}</span></span>`).join("") : "";
+    drawSpark(s.ms, s.tickMs);
+    $("hint").textContent = `tick ${s.tickMs} ms; a late answer repeats the last action.`;
+  }
+  (function anim() { if (state) { offset = (offset + (state.world.speed || 0) * 2) % 32; drawRoad(state); } requestAnimationFrame(anim); })();
+  $("f").onsubmit = async (e) => {
+    e.preventDefault(); $("go").disabled = true;
+    const r = await (await fetch("/start", { method: "POST", body: JSON.stringify({ driver: $("driver").value, seed: $("seed").value }) })).json();
+    if (r.error) { $("stats").innerHTML = `<span class="err">${r.error}</span>`; $("go").disabled = false; }
+  };
+  poll();
+</script>
+</body>
+</html>
