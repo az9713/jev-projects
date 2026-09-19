@@ -1,0 +1,14 @@
+{
+  "secret": { "type": "boolean", "instructions": "Does the diff add a hardcoded secret, API key, token, password, or private key?" },
+  "test_weakened": { "type": "boolean", "instructions": "Does the diff delete, skip, or loosen a test or an assertion?" },
+  "debug_left": { "type": "boolean", "instructions": "Does the diff leave debugging output in place (console.log, print, debugger, dump)?" },
+  "errors_swallowed": { "type": "boolean", "instructions": "Does the diff catch an error and then ignore it, so a failure would pass silently?" },
+  "placeholder": { "type": "boolean", "instructions": "Does the diff add a TODO, stub, or placeholder instead of the real implementation?" },
+  "signature_change": { "type": "boolean", "instructions": "Does the diff change the signature or return shape of a function that other code may call?" },
+  "new_dependency": { "type": "boolean", "instructions": "Does the diff add a new third-party dependency?" },
+  "dead_code": { "type": "boolean", "instructions": "Does the diff add code that is commented out?" },
+  "unrelated": { "type": "boolean", "instructions": "Does the diff mix changes that are unrelated to each other?" },
+  "injection": { "type": "boolean", "instructions": "Does the diff build a SQL query, shell command, or HTML string from user-supplied input without escaping it?" },
+  "shared_constant": { "type": "boolean", "instructions": "Does the diff change a port, path, URL, environment variable name, or config key that other files may reference?" },
+  "risk": { "type": "score", "instructions": "How likely is this diff to break something for users if merged as is?", "criteria": ["safe: docs, comments, or clearly local changes", "low: small logic change with an obvious check", "medium: touches shared code or data handling", "high: changes control flow, error handling, security, or persistence without a test"] }
+}
