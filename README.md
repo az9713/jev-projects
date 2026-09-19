@@ -20,7 +20,7 @@ Every page puts the measured latency on screen. The videos show demos from machi
 | `chess/` | 3003 | Which legal move to play, on a one-minute clock | 5 wins, 5 draws, 0 losses in 10 games vs a random mover; 465 ms per move |
 | `sort/` | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
 | `logs/` | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
-| `lane/` | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | Jev 16 collisions in 5 runs; rules 0; forward-only more. Spec target (< 3) not met |
+| `lane/` | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
 | `hooks/skill-router.mjs` | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 100 skills as options, 7.3k tokens, $0.0003 per prompt |
 | `hooks/verify.mjs` | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
 
@@ -54,7 +54,8 @@ node --env-file=.env probe-burst.mjs 50
 - **Batch-and-wait halves throughput.** Sorting in batches of 20 ran at 3.5 items/s because each batch waited for its slowest call (5 to 7 s tail). Twenty workers pulling from a queue ran at 21.9 items/s.
 - **"Investigate" is the town's default.** For both "Free bread at the bakery" and "A wolf is at the gate", the modal action was investigate (36 and 29 of 50). The events differ in the tails: the wolf gets flee and warn, the bread gets join.
 - **Jev's severity scale is compressed.** Only 12 of 20 incidents scored above 2.0 on the 0 to 3 scale. But the highest routine line scored 1.37 and the lowest incident 1.47, so a threshold at 1.4 separates them completely on this data.
-- **Jev drives badly from text.** On the 60-tick road with 17 obstacles, Jev collided 29 times in 5 runs. Precomputing `ticks_to_impact` cut it to about 15. The rule-based driver with the same information collided 0 times. Jev does not do the arithmetic; it reads.
+- **Jev drives badly from text.** On the 60-tick road with 17 obstacles, Jev collided 29 times in 5 runs. Precomputing `ticks_to_impact` cut it to 13 to 16. A driver that only goes forward: 20. The rule-based driver with the same information: 0. Jev does not do the arithmetic; it reads.
+- **The gateway has slow hours.** The same 2,020-line log check took 119 s at 10:00 and 573 s at 10:30, with 0 failures both times; one lane run averaged 8.6 s per decision in that window. The 503-burst retries in `lib.mjs` kept every answer, at the price of wall time. Both numbers are on the results page.
 - **Labels are one model's opinion.** Sort accuracy moved from 88.1% to 93.7% by rewriting the rubric for sales and billing, not by changing Jev. Most misses were between sales, billing, and other.
 - **Chess: no losses to random.** Five checkmates and five draws in 10 games; two draws hit the 200-ply cap. Jev never played an illegal move because the options are the legal moves.
 
