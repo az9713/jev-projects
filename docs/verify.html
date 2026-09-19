@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev verify</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Diff verifier: twelve questions about a git diff in one call</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/hooks/verify.mjs">hooks/verify.mjs</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>For a git diff, eleven yes/no questions (a hardcoded secret, a weakened test, debugging output left in, swallowed errors, a placeholder, a changed signature, a new dependency, commented-out code, unrelated changes, string-built SQL or shell, a changed shared constant) and one risk score on four levels, all in one call. The questions live in <code>questions.json</code>, which is meant to grow: each bug that reaches you becomes one more question. Runs as a command over the working tree, or as a PostToolUse hook on Edit and Write. The hook is not installed by this repo.</p>
+
+<h2>2. The questions</h2>
+<p>questions.json. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>{
+  "secret": { "type": "boolean", "instructions": "Does the diff add a hardcoded secret, API key, token, password, or private key?" },
+  "test_weakened": { "type": "boolean", "instructions": "Does the diff delete, skip, or loosen a test or an assertion?" },
+  "debug_left": { "type": "boolean", "instructions": "Does the diff leave debugging output in place (console.log, print, debugger, dump)?" },
+  "errors_swallowed": { "type": "boolean", "instructions": "Does the diff catch an error and then ignore it, so a failure would pass silently?" },
+  "placeholder": { "type": "boolean", "instructions": "Does the diff add a TODO, stub, or placeholder instead of the real implementation?" },
+  "signature_change": { "type": "boolean", "instructions": "Does the diff change the signature or return shape of a function that other code may call?" },
+  "new_dependency": { "type": "boolean", "instructions": "Does the diff add a new third-party dependency?" },
+  "dead_code": { "type": "boolean", "instructions": "Does the diff add code that is commented out?" },
+  "unrelated": { "type": "boolean", "instructions": "Does the diff mix changes that are unrelated to each other?" },
+  "injection": { "type": "boolean", "instructions": "Does the diff build a SQL query, shell command, or HTML string from user-supplied input without escaping it?" },
+  "shared_constant": { "type": "boolean", "instructions": "Does the diff change a port, path, URL, environment variable name, or config key that other files may reference?" },
+  "risk": { "type": "score", "instructions": "How likely is this diff to break something for users if merged as is?", "criteria": ["safe: docs, comments, or clearly local changes", "low: small logic change with an obvious check", "medium: touches shared code or data handling", "high: changes control flow, error handling, security, or persistence without a test"] }
+}</code></pre>
+
+
+<h2>3. Run it</h2>
+<pre><code>node --env-file=.env hooks/verify.mjs                  # diff of the working tree vs HEAD
+node --env-file=.env hooks/verify.mjs --base main
+echo '{"tool_input":{"file_path":"x.mjs"}}' | node --env-file=.env hooks/verify.mjs --hook
+node --env-file=.env hooks/verify.mjs --check</code></pre>
+
+<h2>4. The check, verbatim</h2>
+<pre><code>340 ms, 822 tokens, $0.00003; fired: secret 0.99, test_weakened 0.99, debug_left 0.98, unrelated 0.88; risk 2.99</code></pre>
+<p>The synthetic diff behind that line replaces <code>process.env.STRIPE_KEY</code> with a string literal, adds a <code>console.log</code> that prints the key, and turns a test into <code>test.skip</code>. The check asserts that <code>secret</code> and <code>test_weakened</code> fire and that <code>new_dependency</code> does not.</p>
+
+<h2>5. Findings</h2>
+<ul>
+  <li>Four questions fired on the synthetic diff, all four correctly: the secret at 0.99, the skipped test at 0.99, the debug line at 0.98, and "unrelated changes" at 0.88, which is fair for a diff that touches a payment file and a test file for different reasons. The risk score was 2.99 of 3.</li>
+  <li>Twelve questions cost 822 input tokens and $0.00003. The assessment estimated $0.00017 for a 2,000-token diff with 100 questions. A question file ten times this size is still under a cent per diff.</li>
+  <li>The diff is cut at 20,000 characters. A large PR would need to be split by file; the code says so in a comment.</li>
+  <li>Not measured: a real PR from this repo. The check is synthetic because a real diff of this repo has nothing to fire on, which is also the expected result.</li>
+</ul>
+
+<h2>6. Cost and latency</h2>
+<p>$0.00003 per diff at this size. The hook would add 300 to 1,000 ms to every Edit and Write.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

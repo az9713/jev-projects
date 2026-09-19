@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev wiki</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Wiki race: Jev walks Wikipedia link by link</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/wiki/wiki.mjs">wiki/wiki.mjs</a> &nbsp;·&nbsp; <b>Page:</b> <code>http://localhost:3001</code> when the server runs &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>From the links on the current Wikipedia page, which one leads to the target article in the fewest hops. One choice question per hop. The link titles are the option names; the descriptions are empty strings, so Jev reads only the titles. The state is two fields: the current page title and the target title. No browser, no DOM: the Wikipedia API returns the links as text.</p>
+
+<h2>2. The questions</h2>
+<p>The questions and limits, from the top of wiki.mjs. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const QUESTION = {
+  type: "choice",
+  instructions: "Which linked article is most likely to lead to the target article in the fewest hops?",
+  // criteria: one option per link title, empty description. Jev reads the title. Filled per hop.
+};
+const MAX_HOPS = 12;
+const MAX_OPTIONS = 255; // gateway refuses 256
+const SKIP = /^(List of |Lists of |Index of |Outline of |Timeline of |\d{1,4}( BC)?$)|\(disambiguation\)|identifier$/;</code></pre>
+
+<h2>3. What the page shows</h2>
+<p>A form with a start and a target. Below it, the chain of page titles left to right, then one card per hop with the top five candidates as probability bars, Jev's pick in orange, the Wikipedia fetch time and the Jev time for that hop, and the running cost. The page polls <code>/state</code> every 300 ms.</p>
+
+<h2>4. Run it</h2>
+<pre><code>node --env-file=.env wiki/wiki.mjs Coffee Napoleon      # command line
+node --env-file=.env wiki/wiki.mjs                       # http://localhost:3001
+node --env-file=.env wiki/wiki.mjs --check               # 5 races, pass if 3 reach the target in 12 hops</code></pre>
+
+<h2>5. The check, verbatim</h2>
+<pre><code>run 1: reached in 4 hops, 4.6 s, $0.00038  Coffee → Frederick II of Prussia → French Revolution → Bonaparte at the Council of Five Hundred at Saint-Cloud → Napoleon Bonaparte
+run 2: reached in 7 hops, 3.3 s, $0.00064  Coffee → Gustav III of Sweden's coffee experiment → History of coffee → Gabriel de Clieu → Saint-Domingue → Haitian Revolution → French Revolutionary and Napoleonic Wars → Napoleon Bonaparte
+run 3: reached in 5 hops, 4.8 s, $0.00048  Coffee → Gustav III of Sweden's coffee experiment → Gustav III → French Revolution → Bonaparte at the Council of Five Hundred at Saint-Cloud → Napoleon Bonaparte
+run 4: reached in 7 hops, 5.7 s, $0.00064  Coffee → Gustav III of Sweden's coffee experiment → History of coffee → Gabriel de Clieu → Saint-Domingue → Haitian Revolution → French Revolutionary and Napoleonic Wars → Napoleon Bonaparte
+run 5: reached in 4 hops, 2.3 s, $0.00038  Coffee → Frederick II of Prussia → French Revolution → Bonaparte at the Council of Five Hundred at Saint-Cloud → Napoleon Bonaparte
+5/5 reached the target</code></pre>
+<p>One hop, printed by the command-line mode, shows the split between the two network calls:</p><pre><code>Coffee → Frederick II of Prussia (p 0.36, 255 links, wiki 177 ms, jev 354 ms)
+Frederick the Great → French Revolution (p 0.59, 255 links, wiki 245 ms, jev 2523 ms)
+French Revolution → Bonaparte at the Council of Five Hundred at Saint-Cloud (p 0.36, 255 links, wiki 162 ms, jev 541 ms)
+Bonaparte at the Council of Five Hundred at Saint-Cloud → Napoleon Bonaparte (p 0.98, 26 links, wiki 145 ms, jev 262 ms)
+reached Napoleon in 4 hops, 4.9 s, $0.00038</code></pre><p>A second pair, Cheese to Moon, took 9 hops: Legend, Myth, Greek mythology, Apollo, Apollo program, Moon landing, Apollo 11, Exploration of the Moon, Moon.</p>
+
+<h2>6. Findings</h2>
+<ul>
+  <li>Step zero passed: a choice question with empty-string descriptions returns 200. With 255 fake titles plus "Napoleon Bonaparte" and the target "Napoleon", Jev picked the right one at p 0.97 in 337 ms. A 256th option is refused with "TypeSafe Choice questions support at most 255 options".</li>
+  <li>Redirects matter. Jev picks "Napoleon Bonaparte", which is a redirect to "Napoleon". The code resolves the target once with <code>action=query&redirects=1</code> and compares the canonical title after each fetch, so the race ends on the redirect.</li>
+  <li>The Wikipedia API refuses requests without a User-Agent header. The code sends one that names this repo.</li>
+  <li>The options are the first 255 links in article order after a filter drops "List of", years, and disambiguation pages. Lead-section links come first, which is where the useful ones are. No race looped; the visited set was never needed in 7 runs.</li>
+  <li>The Jev time per hop ranged from 262 to 2,523 ms with 255 options. The Wikipedia fetch was 145 to 245 ms. Jev is the slower half of every hop from this machine.</li>
+  <li>Not built: the race lane against a chat model asked the same question through <code>generateText</code>, which the assessment listed as the way to show the latency gap on one screen.</li>
+</ul>
+
+<h2>7. Cost and latency</h2>
+<p>One hop with 255 options is about 2,000 input tokens, $0.00008 to $0.0001. A race is $0.0004 to $0.0006.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

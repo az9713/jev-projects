@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev sort</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Sort at scale: 303 messages into five queues</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/sort/sort.mjs">sort/sort.mjs</a> &nbsp;·&nbsp; <b>Page:</b> <code>http://localhost:3004</code> when the server runs &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>Which of five queues a short customer message belongs in: billing, technical, sales, spam, other. One choice question per message with a one-line rubric per queue. Twenty calls are in flight at all times. The 303 messages with labels were written once by <code>anthropic/claude-sonnet-5</code> into <code>items.json</code>; a run of more than 303 items cycles through them.</p>
+
+<h2>2. The questions</h2>
+<p>The question, the generation prompt, and the worker count, from the top of sort.mjs. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const QUESTION = {
+  bin: {
+    type: "choice",
+    instructions: "Which queue should this incoming message go to?",
+    criteria: {
+      billing: "An existing account's money: a charge, invoice, receipt, refund, tax form, or payment method",
+      technical: "Bugs, errors, outages, setup problems, how a feature works",
+      sales: "Before buying: wants to buy, upgrade, compare plans or prices, see a demo, get a quote, evaluate the product, or ask about contract terms",
+      spam: "Unsolicited promotion, scams, nonsense, or unrelated mass mail",
+      other: "Anything else: feedback, thanks, general questions, partnerships, sponsorships, events, research, job applications",
+    },
+  },
+};
+const BINS = Object.keys(QUESTION.bin.criteria);
+const GEN_MODEL = "anthropic/claude-sonnet-5";
+const GEN_PROMPT = `Write 300 short customer messages to a software company, one sentence each, 60 messages per queue for these five queues: ${BINS.join(", ")}.
+Vary tone, length and topic strongly; some messages should be ambiguous but still have one best queue. Output only JSON, no prose, no code fence:
+[{"text":"...","label":"billing"}, ...]`;
+const WORKERS = Number(process.argv[process.argv.indexOf("--batch") + 1]) || 20; // calls in flight; 20 stays under the 20 requests/s docs limit at ~1 s per call</code></pre>
+
+<h2>3. What the page shows</h2>
+<p>Items fall from the top as dots, arc into one of five bins, and the bin fills. Counters for items sorted, items per second, elapsed time, dollars, and accuracy against the labels. A histogram of the probability of the chosen bin in ten buckets, and a list of the latest items with the misses in orange.</p>
+
+<h2>4. Run it</h2>
+<pre><code>node --env-file=.env sort/sort.mjs            # http://localhost:3004
+node --env-file=.env sort/sort.mjs --batch 10 # 10 calls in flight
+node --env-file=.env sort/sort.mjs --check</code></pre>
+
+<h2>5. The check, verbatim</h2>
+<pre><code>303/303 sorted in 13.8 s, 21.9/s, accuracy 93.7% on 303 labelled, $0.0059, bins {"billing":60,"technical":65,"sales":57,"spam":57,"other":64}
+  miss: "Is there a discount for nonprofit organizations?" → sales (p 0.99), label billing
+  miss: "The coupon code didn't apply at checkout." → technical (p 0.86), label billing
+  miss: "Why is VAT not included in the listed price?" → sales (p 0.65), label billing
+  miss: "Do you offer multi-year discounts for enterprise billing?" → sales (p 0.99), label billing
+  miss: "Do you provide onboarding support for new customers?" → other (p 0.45), label sales
+  miss: "Can you connect me with someone about reseller opportunities?" → other (p 0.69), label sales
+  miss: "I'd like to explore partnership opportunities with your company." → other (p 1), label sales
+  miss: "Do you have a referral program for existing customers?" → other (p 0.65), label sales</code></pre>
+<p>The two runs before it, with the earlier rubric and the batch-and-wait loop:</p><pre><code>303/303 sorted in 87.6 s, 3.5/s, accuracy 88.1% on 303 labelled, $0.0053, bins {"billing":76,"technical":65,"sales":54,"spam":55,"other":53}
+  miss: "I'd like to explore a joint webinar with your product team." → sales (p 0.99), label other
+  miss: "I wanted to check if you sponsor hackathons or student events." → sales (p 0.95), label other
+
+303/303 sorted in 16.7 s, 18.2/s, accuracy 87.5% on 303 labelled, $0.0056, bins {"billing":78,"technical":66,"sales":33,"spam":54,"other":72}
+  miss: "What's the pricing difference between your pro and business tiers?" → billing (p 0.72), label sales
+  miss: "Is there a discount if we pay for two years upfront?" → billing (p 0.84), label sales</code></pre>
+
+<h2>6. Findings</h2>
+<ul>
+  <li>Batch-and-wait halves throughput. The first loop sent 20 calls, waited for all 20, then sent the next 20. Every batch waited for its slowest call, and the tail is 5 to 7 s: 3.5 items/s. Twenty workers pulling from one queue: 18.2 then 21.9 items/s on the same items.</li>
+  <li>Accuracy is a rubric question. 88.1%, then 87.5%, then 93.7%, with Jev unchanged. The first rubric put "pricing" under billing and "partnership" under sales; the labels disagreed. The final rubric says billing is an existing account's money and sales is anything before buying.</li>
+  <li>The remaining misses sit between sales, billing, and other. "Is there a discount for nonprofit organizations?" is labelled billing and sorted sales at p 0.99. The labels were written by one model in one pass; they are an opinion, not a ground truth.</li>
+  <li>The 21.9 items/s run happened while the log monitor's check was also running with 10 calls in flight. The gateway did not slow down for it.</li>
+  <li>The assessment sized this at 5,000 items in 4 to 5 minutes. At 21.9 items/s that is under 4 minutes; 150,000 items, the Skittles count, would be about 2 hours and $2.25.</li>
+</ul>
+
+<h2>7. Cost and latency</h2>
+<p>$0.00002 per item. 303 items: $0.006. 10,000 items: about $0.20.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

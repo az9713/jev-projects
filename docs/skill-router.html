@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev skill-router</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Skill router: which of 147 Claude Code skills fits the prompt</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/hooks/skill-router.mjs">hooks/skill-router.mjs</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>Which skill the coding agent should load for a user prompt, or none. One choice question. Every folder under <code>~/.claude/skills</code> with a <code>description:</code> line in its front matter is an option; the description, cut to 400 characters, is the rubric. Built as a UserPromptSubmit hook that prints "Use skill X" when the top probability is at least 0.5. The hook is not installed by this repo.</p>
+
+<h2>2. The questions</h2>
+<p>The settings, from the top of skill-router.mjs. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const SKILLS_DIR = join(homedir(), ".claude", "skills");
+const THRESHOLD = 0.5;      // below this the hook prints nothing
+const MAX_DESC = 400;       // characters of each description sent as the rubric; keeps 147 skills near 12k tokens
+const INSTRUCTIONS = "Which skill should the coding agent load to handle this user prompt? Pick none if no skill clearly applies.";</code></pre>
+
+
+<h2>3. Run it</h2>
+<pre><code>node --env-file=.env hooks/skill-router.mjs "wrap up my day"
+echo '{"prompt":"wrap up my day"}' | node --env-file=.env hooks/skill-router.mjs --hook
+node --env-file=.env hooks/skill-router.mjs --check</code></pre>
+
+<h2>4. The check, verbatim</h2>
+<pre><code>ok   "wrap up my day" → end-of-day-wrapup (p 1, conf 1, 554 ms, 9920 tokens)
+ok   "what is eating my disk space?" → disk-hog-hunter (p 0.98, conf 0.98, 421 ms, 9923 tokens)
+ok   "morning brief" → morning-brief (p 1, conf 1, 408 ms, 9919 tokens)
+ok   "summarize this youtube video https://www.you" → yt-transcript-summary (p 0.62, conf 0.6, 2615 ms, 9935 tokens)
+ok   "write every reply in simplified technical en" → asd-ste100 (p 1, conf 1, 495 ms, 9923 tokens)
+ok   "blindspot pass on Kubernetes networking" → blind-spot-pass (p 1, conf 1, 6926 ms, 9923 tokens)
+6/6 matched, 147 skills as options, $0.0025</code></pre>
+<p>The first run of the same check offered only 100 skills, at 7,287 tokens and 314 to 488 ms per prompt, and also matched 6/6.</p>
+
+<h2>5. Findings</h2>
+<ul>
+  <li>Six of six test prompts matched, at p 0.98 to 1 for five of them. The YouTube prompt matched at p 0.62 because two skills claim it: <code>yt-transcript-summary</code> and <code>daily-source-intake</code>. That is a real ambiguity in the skill descriptions, not in Jev.</li>
+  <li>The first run saw 100 skills, not 147. Forty-eight of the skill folders are links, and <code>readdir</code> with <code>withFileTypes</code> reports a link as not a directory. A <code>stat</code> per entry fixed it. One folder, <code>synced</code>, has no SKILL.md.</li>
+  <li>147 options with 400-character rubrics is 9,920 input tokens and $0.0004 per prompt. Two hundred prompts a day would be $0.08.</li>
+  <li>Latency per prompt ran 408 to 6,926 ms in the final check; the 6.9 s call fell in the gateway's slow half hour. Installed as a hook, this time is added to every prompt. That is the reason the hook is not installed: it is Simon's call.</li>
+  <li>Not done: the assessment's proof check of 30 past prompts from real transcripts with the skill actually used. Six hand-written prompts stand in.</li>
+</ul>
+
+<h2>6. Cost and latency</h2>
+<p>$0.0004 per prompt with all 147 skills. The README shows the one settings.json line that would install it.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

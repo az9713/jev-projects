@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev chess</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Bullet chess: Jev picks from the legal moves</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/chess/chess.mjs">chess/chess.mjs</a> &nbsp;·&nbsp; <b>Page:</b> <code>http://localhost:3003</code> when the server runs &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>Which legal move to play. <code>chess.js</code> generates the legal moves in SAN; they become the options of one choice question with empty descriptions. The state is the FEN, the side to move, and the last six moves. The opponent is a random mover by default, or any gateway chat model asked for one SAN move with a 10 s budget. Each side has one minute; Jev's clock runs down by its measured call time.</p>
+
+<h2>2. The questions</h2>
+<p>The question and limits, from the top of chess.mjs. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const QUESTION = { type: "choice", instructions: "Which move is best for the side to move?" }; // criteria: one option per legal move (SAN), empty description
+const HISTORY = 6;          // last N moves shown to Jev
+const CLOCK_MS = 60_000;    // bullet: one minute per side
+const MAX_PLIES = 200;      // ponytail: hard stop, scored as a draw
+const MODEL_BUDGET_MS = 10_000; // the chat opponent's time per move; a late or illegal answer plays a random move</code></pre>
+
+<h2>3. What the page shows</h2>
+<p>A board drawn on a canvas with Unicode pieces, two clocks with Jev's in orange, a card with Jev's last decision (the move, how many legal moves it chose from, the call time, the confidence) and the top five candidates as bars, and the move list with Jev's moves in orange. A form picks Jev's colour and the opponent.</p>
+
+<h2>4. Run it</h2>
+<pre><code>node --env-file=.env chess/chess.mjs                 # http://localhost:3003
+node --env-file=.env chess/chess.mjs --check         # 10 games vs random
+node --env-file=.env chess/chess.mjs --check --games 1</code></pre>
+
+<h2>5. The check, verbatim</h2>
+<pre><code>game 1: Jev white, 200 plies, draw (200 plies), $0.0024
+game 2: Jev black, 20 plies, black wins by checkmate, $0.0002
+game 3: Jev white, 200 plies, draw (200 plies), $0.0022
+game 4: Jev black, 166 plies, draw, $0.0018
+game 5: Jev white, 67 plies, white wins by checkmate, $0.0009
+game 6: Jev black, 36 plies, black wins by checkmate, $0.0005
+game 7: Jev white, 167 plies, draw, $0.0020
+game 8: Jev black, 62 plies, black wins by checkmate, $0.0008
+game 9: Jev white, 23 plies, white wins by checkmate, $0.0003
+game 10: Jev black, 200 plies, draw (200 plies), $0.0022
+Jev won or drew 10/10; 572 Jev moves, mean 465 ms per move, $0.0133 total</code></pre>
+<p>The first single game, before the ten: Jev white, 37 plies, white wins by checkmate, 19 Jev moves at a mean of 723 ms, $0.0005.</p>
+<p>The first ten-game attempt died in game 2 on a gateway 503 that outlived the SDK's retries. The error, cut to its first line:</p>
+<pre><code>RetryError [AI_RetryError]: Failed after 3 attempts. Last error: GatewayInternalServerError: Service temporarily unavailable. Please try again shortly.</code></pre>
+<p>The second single game died on the SDK itself:</p>
+<pre><code>InvalidResponseDataError [AI_InvalidResponseDataError]: Question "move" did not select a highest-probability option.
+  data: { move: { type: 'choice', choice: 'Nc4', probabilities: { ..., Nc4: 0.13, Ne4: 0.14, ... } } }</code></pre>
+
+<h2>6. Findings</h2>
+<ul>
+  <li>Jev never played an illegal move. It cannot: the options are the legal moves, so the schema does the legality. This is what "zero hallucination" means here.</li>
+  <li>Five checkmates and five draws against random moves. Two draws were the 200-ply cap; two were real (repetition or insufficient material). Jev finds mates but does not always convert a won position.</li>
+  <li>The rounding tie. Jev's probabilities are rounded to two decimals. When the chosen move shows 0.13 and another shows 0.14, <code>ai</code> 7.0.107 throws <code>AI_InvalidResponseDataError</code>. With 20 to 40 near-equal moves this happens often. <code>lib.mjs</code> catches it and takes the answers from the error's <code>data</code> field; the confidence and cost of that call are lost.</li>
+  <li>The 503 bursts. The gateway answered 503 three times within 6 s during game 2 of the first check. <code>lib.mjs</code> now waits 3, 6, 12, and 24 s and tries again before giving up.</li>
+  <li>Mean time per move over 572 moves: 465 ms. Over one game earlier in the session: 723 ms. Over an HTTP smoke test at black: about 340 ms. The clock on the page shows whichever it is.</li>
+  <li>Not measured: a game against a chat model. The page accepts a gateway model id in the opponent field and gives it 10 s per move; a late or illegal answer plays a random move and is marked in the move list.</li>
+</ul>
+
+<h2>7. Cost and latency</h2>
+<p>About 30 legal moves per position, under 1,000 input tokens: $0.00004 per move. A game: $0.0002 to $0.0024.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

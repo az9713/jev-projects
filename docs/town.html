@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev town</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Town of agents: 50 characters, one burst</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/town/town.mjs">town/town.mjs</a> &nbsp;·&nbsp; <b>Page:</b> <code>http://localhost:3002</code> when the server runs &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>For each of 50 characters, what it does when an event is announced: ignore, investigate, join, flee, or warn. A second question scores urgency on five levels to set walking speed. All 50 calls fire at once with <code>Promise.all</code>. The state per character is its name, role, traits, energy, location, the event text, and the event's location. The characters and ten places were written once by <code>anthropic/claude-sonnet-5</code> into <code>town.json</code> and are committed, so every run sees the same town.</p>
+
+<h2>2. The questions</h2>
+<p>The questions and the generation prompt, from the top of town.mjs. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const QUESTIONS = {
+  action: {
+    type: "choice",
+    instructions: "The character has just heard the event. What does this specific character, with these traits and this role, do next?",
+    criteria: {
+      ignore: "Carries on with the current task; the event does not concern this character",
+      investigate: "Goes to see what is happening",
+      join: "Takes part in it, or helps the people involved",
+      flee: "Gets away from it to somewhere safe",
+      warn: "Goes to tell other people about it",
+    },
+  },
+  urgency: {
+    type: "score",
+    instructions: "How urgently does the character act on the event?",
+    criteria: ["none: no change of pace", "low: when convenient", "medium: soon", "high: right away", "extreme: drops everything and runs"],
+  },
+};
+const GEN_MODEL = "anthropic/claude-sonnet-5";
+const GEN_PROMPT = `Invent a small medieval town for a simulation. Output only JSON, no prose, no code fence, with this shape:
+{"places":[{"name":"bakery","x":20,"y":30}, ...], "characters":[{"name":"Mara","role":"baker","traits":"cautious, generous","place":"bakery","energy":0.8}, ...]}
+Rules: 10 places (include bakery, mill, gate, well, market, tavern, forge, farm, chapel, river) with x and y from 5 to 95.
+Exactly 50 characters with distinct names and varied roles (include exactly one baker, one miller, one gatekeeper, one priest, one blacksmith, a few children, a few elders, farmers, traders, guards, a thief, a healer).
+Traits: two or three adjectives that differ a lot between characters (brave, cowardly, nosy, lazy, greedy, kind, suspicious, ...). place: one of the 10 place names. energy: 0.1 to 1.0.`;</code></pre>
+
+<h2>3. What the page shows</h2>
+<p>A top-down map with the ten places as dark circles and each character as a coloured dot with its name. You type an event and pick a place. The dots go grey while the burst runs, then take the colour of their action: teal investigate, orange join, red flee, yellow warn, grey ignore. Each dot carries a small bar for the probability of its action. Dots walk toward or away from the event at a speed set by urgency. The side panel shows answered/total, burst wall time, decisions per second, median and max per call, cost, the action counts, and a list of every character sorted by urgency.</p>
+
+<h2>4. Run it</h2>
+<pre><code>node --env-file=.env town/town.mjs            # http://localhost:3002
+node --env-file=.env town/town.mjs --batch 10 # 10 calls per batch instead of one burst of 50
+node --env-file=.env town/town.mjs --check
+node --env-file=.env town/town.mjs --gen      # rewrite town.json (not needed; it is committed)</code></pre>
+
+<h2>5. The check, verbatim</h2>
+<pre><code>"Free bread at the bakery": 50/50 ok, burst 6876 ms, 7.3/s, median 515 ms, max 6873 ms, $0.0011, actions {"ignore":4,"investigate":36,"join":7,"flee":0,"warn":3}
+"A wolf is at the gate": 50/50 ok, burst 9991 ms, 5/s, median 420 ms, max 9990 ms, $0.0011, actions {"ignore":0,"investigate":29,"join":0,"flee":3,"warn":18}
+flee+warn: bread 3, wolf 21; join: bread 7, wolf 0; baker on bread → join (p 0.69, urgency 1.1)</code></pre>
+<p>Two earlier runs of the same two events, before the check was rewritten:</p><pre><code>"Free bread at the bakery": 50/50 ok, burst 6857 ms, 7.3/s, median 512 ms, max 6853 ms, $0.0011, actions {"ignore":1,"investigate":41,"join":7,"flee":0,"warn":1}
+"A wolf is at the gate": 50/50 ok, burst 2655 ms, 18.8/s, median 432 ms, max 2655 ms, $0.0011, actions {"ignore":0,"investigate":34,"join":0,"flee":3,"warn":13}
+
+"Free bread at the bakery": 50/50 ok, burst 2775 ms, 18/s, median 643 ms, max 2771 ms, $0.0011, actions {"ignore":3,"investigate":36,"join":8,"flee":0,"warn":3}
+"A wolf is at the gate": 50/50 ok, burst 6622 ms, 7.6/s, median 376 ms, max 6622 ms, $0.0011, actions {"ignore":0,"investigate":30,"join":0,"flee":3,"warn":17}</code></pre>
+
+<h2>6. Findings</h2>
+<ul>
+  <li>All 50 calls returned in all six bursts. The burst wall time ranged from 2.7 to 10.0 s while the median per call stayed at 376 to 643 ms. One slow call sets the burst time. Decisions per second on screen ranged from 5 to 18.8 for the same work.</li>
+  <li>The assessment's proof check said the modal action must differ between the two events. It does not: investigate won both, 36 and 29 of 50 in the final run, 41 and 34 in the first. The check was rewritten to what does differ. The wolf draws flee and warn (21 against 3); the bread draws join (7 against 0). The comment in <code>town.mjs</code> records this.</li>
+  <li>One rewording of the instruction, adding "this specific character, with these traits and this role", moved the counts by a few characters and did not change the modal action.</li>
+  <li>The baker joined the free bread at p 0.69 in the final run and p 0.75 and 0.68 in the earlier ones. The spec's second assertion, that the baker does not ignore it, held every time.</li>
+  <li>Characters with the same traits do answer alike. The generation prompt asks for traits that differ a lot for that reason.</li>
+</ul>
+
+<h2>7. Cost and latency</h2>
+<p>One event: 50 calls with two questions each, $0.0011. An hour of continuous events at 5 calls per second would be about $0.50.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

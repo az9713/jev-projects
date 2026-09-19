@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev probe-burst</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Burst probe: 50 Jev calls at once</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/probe-burst.mjs">probe-burst.mjs</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>Nothing useful. Each call asks one boolean question, "Is the number even?", about one integer. The point is the gateway, not the answer: how many of 50 parallel requests return, how long the burst takes, and how the per-call latency spreads. Every parallel plan in this repo (the town, the sorter, the log monitor) depends on the answer.</p>
+
+<h2>2. The questions</h2>
+<p>The whole file. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// Fire N parallel Jev calls. Run: node --env-file=.env probe-burst.mjs [N]
+// Prints how many returned, the burst wall time, and per-call latency spread.
+import { experimental_evaluate as evaluate } from "ai";
+const N = Number(process.argv[2]) || 50;
+const questions = { even: { type: "boolean", instructions: "Is the number even?" } };
+const t0 = performance.now();
+const rs = await Promise.allSettled(Array.from({ length: N }, (_, n) =&gt; {
+  const s = performance.now();
+  return evaluate({ model: "typesafe-ai/jev", state: { n }, questions }).then((r) =&gt; ({ ms: performance.now() - s, p: r.answers.even.probability }));
+}));
+const burst = Math.round(performance.now() - t0);
+const ok = rs.filter((r) =&gt; r.status === "fulfilled").map((r) =&gt; r.value);
+const ms = ok.map((r) =&gt; r.ms).sort((a, b) =&gt; a - b);
+console.log(`${ok.length}/${N} ok, burst ${burst} ms, per call min ${Math.round(ms[0])} median ${Math.round(ms[ms.length &gt;&gt; 1])} max ${Math.round(ms.at(-1))} ms`);
+const wrong = ok.filter((r, i) =&gt; (r.p &gt;= 0.5) !== (i % 2 === 0)).length;
+console.log(`even/odd wrong: ${wrong}/${ok.length} (p rounded at 0.5)`);
+for (const r of rs.filter((r) =&gt; r.status === "rejected")) console.log("fail:", String(r.reason?.message ?? r.reason).slice(0, 200));
+</code></pre>
+
+
+<h2>3. Run it</h2>
+<pre><code>node --env-file=.env probe-burst.mjs 50</code></pre>
+
+<h2>4. The check, verbatim</h2>
+<pre><code>48/50 ok, burst 7760 ms, per call min 1079 median 1230 max 7739 ms
+even/odd wrong: 4/48 (p rounded at 0.5)
+fail: Failed after 3 attempts. Last error: GatewayInternalServerError: Service temporarily unavailable. Please try again shortly.
+fail: Failed after 3 attempts. Last error: GatewayInternalServerError: Service temporarily unavailable. Please try again shortly.</code></pre>
+
+
+<h2>5. Findings</h2>
+<ul>
+  <li>48 of 50 returned. The two failures were 503 responses that survived the SDK's three retries, which span about 6 s.</li>
+  <li>The median per call inside the burst was 1,230 ms. Sequential calls in the other projects took 300 to 700 ms. Parallel load roughly doubles the per-call time.</li>
+  <li>The 7,739 ms maximum is a call that hit 503, retried three times, and then succeeded.</li>
+  <li>Jev got 4 of 48 even/odd answers wrong at a 0.5 cut. The question is a joke, but it shows that a boolean probability near 0.5 is not a coin the caller should trust.</li>
+  <li>Consequence: <code>lib.mjs</code> retries four more times at 3, 6, 12, and 24 s when the SDK gives up. The town fires all 50 at once and draws a failed character grey instead of crashing.</li>
+</ul>
+
+<h2>6. Cost and latency</h2>
+<p>50 boolean calls: about $0.0006 in total, $0.0000116 each.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>

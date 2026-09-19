@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev logs</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<h1>Live log monitor: severity as the lines arrive</h1>
+<p class="meta"><b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/logs/logs.mjs">logs/logs.mjs</a> &nbsp;·&nbsp; <b>Page:</b> <code>http://localhost:3005</code> when the server runs &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>For each log line, three things in one call: a severity score on four levels (routine, warning, serious incident, outage), a boolean for whether to page the on-call engineer, and which subsystem the line concerns. The state is the line plus the previous three lines as context. A generator mixes twenty routine templates with twenty incident lines; the check plants the twenty incidents at fixed positions in 2,000 routine lines.</p>
+
+<h2>2. The questions</h2>
+<p>The questions and the line templates, from the top of logs.mjs. This is the block a reviewer must read; the rest of the file is plumbing.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const QUESTIONS = {
+  severity: {
+    type: "score",
+    instructions: "How serious is this log line for the on-call engineer? The previous lines are context only.",
+    criteria: ["routine: normal operation", "warning: degraded but working; no user impact yet", "serious incident: users are affected; needs attention now", "outage: the service is down, or data is at risk"],
+  },
+  page_oncall: { type: "boolean", instructions: "Should the on-call engineer be paged for this line right now?" },
+  category: { type: "choice", instructions: "Which subsystem does this line concern?", criteria: { db: "Database, queries, replicas, connection pools", network: "Network, DNS, TLS, load balancers, latency between hosts", auth: "Logins, tokens, sessions, permissions", app: "Application code, jobs, deploys, memory, disk", unknown: "Cannot tell" } },
+};
+const ROUTINE = [
+  "INFO api GET /api/users 200 12ms", "INFO api POST /api/orders 201 48ms", "INFO cache hit ratio 0.93 over last 60s", "INFO auth user 4821 logged in",
+  "INFO jobs nightly-report finished in 3.2s", "INFO health check ok", "INFO db connection pool 12/50 in use", "INFO deploy v2.14.3 started",
+  "INFO deploy v2.14.3 finished, 0 errors", "INFO tls certificate valid for 82 days", "INFO api GET /api/products 200 9ms", "INFO queue depth 3",
+  "INFO db slow query 1.8s: SELECT * FROM orders WHERE ...", "INFO api retrying upstream request (attempt 2/3)", "INFO auth token refreshed for user 118",
+  "INFO backup completed, 4.2 GB", "INFO api rate limit applied to client 77 (100 req/min)", "INFO gc pause 40ms", "INFO jobs email-digest queued 240 mails",
+  "INFO db replica lag 0.4s",
+]; // ponytail: 20 templates; the last few are gray on purpose (slow query, retry, rate limit) to see where Jev draws the line
+const INCIDENTS = [
+  "ERROR db connection pool exhausted (50/50), requests queuing", "ERROR db replica lag 45s and rising", "FATAL app out of memory, killing worker 7",
+  "ERROR api 503 rate 34% over last 60s", "ERROR auth 1200 failed logins from 10.0.0.7 in 60s", "ERROR disk /var 98% full", "ERROR payments webhook failed 5 times, giving up",
+  "ERROR network packet loss 40% to db-primary", "ERROR tls certificate for api.example.com expires in 2 hours", "ERROR db deadlock detected, transaction rolled back",
+  "FATAL db primary unreachable, failover not started", "ERROR auth JWT signing key not found, all logins failing", "ERROR api p99 latency 12s (normal 200ms)",
+  "ERROR jobs nightly-report crashed: NullPointerException", "ERROR queue depth 48000 and growing", "ERROR dns resolution failing for payments.internal",
+  "FATAL app segfault in worker 3, restarting loop (5 restarts in 2 min)", "ERROR db disk write failed: I/O error", "ERROR auth session store redis timeout for 90% of requests",
+  "ERROR network load balancer marked all 4 backends unhealthy",
+];</code></pre>
+
+<h2>3. What the page shows</h2>
+<p>A scrolling log with a colour per severity band, a rolling line chart of severity over the last 300 lines, and a red banner for 15 s when the page boolean passes 0.8. Counters for lines generated per second, lines scored, calls in flight, mean time per line, and dollars.</p>
+
+<h2>4. Run it</h2>
+<pre><code>node --env-file=.env logs/logs.mjs            # http://localhost:3005, 5 lines/s
+node --env-file=.env logs/logs.mjs --rate 10
+node --env-file=.env logs/logs.mjs --check    # 2,020 lines, 10 calls in flight</code></pre>
+
+<h2>5. The check, verbatim</h2>
+<pre><code>2020 lines in 119.0 s, 0 failed, $0.0502
+incidents above 2.0: 12/20; routine lines above 2.0: 0
+separation: highest routine 1.37, lowest incident 1.47; page_oncall &gt; 0.5: 18/20 incidents, 3 routine
+  missed incident: 1.76 ERROR db replica lag 45s and rising
+  missed incident: 1.65 ERROR auth 1200 failed logins from 10.0.0.7 in 60s
+  missed incident: 1.47 ERROR tls certificate for api.example.com expires in 2 hours
+  missed incident: 1.74 ERROR db deadlock detected, transaction rolled back
+  missed incident: 1.94 ERROR api p99 latency 12s (normal 200ms)
+  missed incident: 1.50 ERROR jobs nightly-report crashed: NullPointerException
+  missed incident: 1.96 ERROR queue depth 48000 and growing
+  missed incident: 1.87 ERROR dns resolution failing for payments.internal</code></pre>
+<p>The same check half an hour later, same lines, same seed:</p><pre><code>2020 lines in 573.5 s, 0 failed, $0.0502
+incidents above 2.0: 12/20; routine lines above 2.0: 0
+separation: highest routine 1.38, lowest incident 1.49; page_oncall > 0.5: 18/20 incidents, 3 routine</code></pre>
+
+<h2>6. Findings</h2>
+<ul>
+  <li>The assessment's proof check said at least 18 of 20 incidents must score above 2.0 on the 0 to 3 scale. Only 12 did. The eight misses scored 1.47 to 1.96: "replica lag 45s", "1200 failed logins in 60s", "certificate expires in 2 hours". Jev calls them warnings, not incidents.</li>
+  <li>But the two sets do not overlap. The highest of 2,000 routine lines scored 1.37 and 1.38; the lowest incident 1.47 and 1.49. A threshold at 1.4 separates them completely on this data, in both runs. The check now asserts that, and the code says why.</li>
+  <li>The page boolean is the sharper signal: 18 of 20 incidents above 0.5, and 3 of 2,000 routine lines. The two incidents it did not page for were not printed; the severity misses were.</li>
+  <li>The gray routine lines ("slow query 1.8s", "retrying upstream request", "rate limit applied") never crossed 2.0 and never paged. Jev draws the line where an on-call engineer would.</li>
+  <li>The gateway has slow hours. 119 s at about 10:00 local time, 573 s at about 10:30, 0 failures both times. The retries in <code>lib.mjs</code> kept every answer and paid in wall time. A live page at 5 lines per second would have fallen behind by hundreds of lines in that window; the in-flight counter on the page is where that shows.</li>
+</ul>
+
+<h2>7. Cost and latency</h2>
+<p>$0.000025 per line with three questions. 2,020 lines: $0.05. Ten lines per second for an hour: about $0.90.</p>
+<div class="callout">Every number above was measured from one machine on 2026-09-19 through the Vercel AI Gateway. The source videos show demos from machines close to the model; this page shows what the same idea costs from here.</div>
+</main>
+</body>
+</html>
