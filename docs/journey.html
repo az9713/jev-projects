@@ -124,6 +124,48 @@ fail: Failed after 3 attempts. Last error: GatewayInternalServerError: Service t
 </ul>
 <h3>Near-miss</h3>
 <p>The "even/odd wrong: 4/48" line was almost left out as a joke. It stayed because it is the only place in the batch where a boolean near 0.5 was tested against a known truth, and it shows that 0.5 is not a safe cut.</p>
+<h3>Structured input and output</h3>
+<p>One of the 50 calls. Captured on 2026-09-19 at about 11:20 local time for this page, 319 ms round trip. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;n&quot;: 3
+  },
+  &quot;questions&quot;: {
+    &quot;even&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Is the number even?&quot;
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;even&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.01
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 276,
+    &quot;outputTokens&quot;: 20,
+    &quot;totalTokens&quot;: 296
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {}
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.000011592&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGRAMVHFCP05PD7W77ERT&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="wiki" data-title="wiki">
@@ -148,6 +190,73 @@ run 5: reached in 4 hops, 2.3 s, $0.00038
 <p>Two routes recurred: through Frederick II of Prussia and the French Revolution, or through Gustav III's coffee experiment, Gabriel de Clieu, and the Haitian Revolution. The HTTP smoke test ran Cheese → Moon in 9 hops through Apollo. The Jev time per hop with 255 options ranged from 262 to 2,523 ms; the Wikipedia fetch from 145 to 245 ms.</p>
 <h3>Left out</h3>
 <p>The race lane against a chat model. The numbers on the page already put Jev's time next to Wikipedia's; a second model would add a third column and one more dependency on the reply models' availability.</p>
+<h3>Structured input and output</h3>
+<p>The first hop of Coffee → Napoleon, with the real link list fetched for this capture. Captured on 2026-09-19 at about 11:20 local time for this page, 293 ms round trip. 255 options in the real request; 8 shown. The probabilities map is cut the same way, highest first. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;current&quot;: &quot;Coffee&quot;,
+    &quot;target&quot;: &quot;Napoleon&quot;
+  },
+  &quot;questions&quot;: {
+    &quot;next&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;Which linked article is most likely to lead to the target article in the fewest hops?&quot;,
+      &quot;criteria&quot;: {
+        &quot;Open access&quot;: &quot;&quot;,
+        &quot;Coffee roasting&quot;: &quot;&quot;,
+        &quot;Coffee preparation&quot;: &quot;&quot;,
+        &quot;History of coffee&quot;: &quot;&quot;,
+        &quot;Economics of coffee&quot;: &quot;&quot;,
+        &quot;Coffeehouse&quot;: &quot;&quot;,
+        &quot;Coffee production&quot;: &quot;&quot;,
+        &quot;Sustainable coffee&quot;: &quot;&quot;,
+        &quot;… 247 more options&quot;: &quot;&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;next&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;Gabriel de Clieu&quot;,
+      &quot;probabilities&quot;: {
+        &quot;Gabriel de Clieu&quot;: 0.19,
+        &quot;Gustav III of Sweden&#x27;s coffee experiment&quot;: 0.17,
+        &quot;Frederick II of Prussia&quot;: 0.16,
+        &quot;Battle of Vienna&quot;: 0.09999999999999999,
+        &quot;History of coffee&quot;: 0.04,
+        &quot;Coffee in Italy&quot;: 0.03,
+        &quot;Caffeine&quot;: 0.03,
+        &quot;Coffea&quot;: 0.02,
+        &quot;… 247 more&quot;: 0
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 2593,
+    &quot;outputTokens&quot;: 2553,
+    &quot;totalTokens&quot;: 5146
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;next&quot;: 0.17
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.000108906&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGRMJHTK8TYMQ23GQ1PFX&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="chess" data-title="chess">
@@ -180,6 +289,96 @@ Jev won or drew 10/10; 572 Jev moves, mean 465 ms per move, $0.0133 total</code>
 <p>The HTTP smoke test at black reached 59 plies in about 10 s, with Jev's last move <code>c1=Q+</code>, a promotion with check, which the SAN options carry without special handling. The board, clocks, bars, and move list were checked by fetching the page and the state, not by looking at a browser.</p>
 <h3>Left out</h3>
 <p>A measured game against a chat model. The page accepts a gateway model id and gives it 10 s per move; a late or illegal reply plays a random move and is marked. Not run: it would cost 100 times what Jev's moves cost and the spec listed it as optional.</p>
+<h3>Structured input and output</h3>
+<p>The start position: 20 legal moves as options. Captured on 2026-09-19 at about 11:20 local time for this page, 309 ms round trip. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;fen&quot;: &quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&quot;,
+    &quot;side_to_move&quot;: &quot;white&quot;,
+    &quot;last_moves&quot;: []
+  },
+  &quot;questions&quot;: {
+    &quot;move&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;Which move is best for the side to move?&quot;,
+      &quot;criteria&quot;: {
+        &quot;a3&quot;: &quot;&quot;,
+        &quot;a4&quot;: &quot;&quot;,
+        &quot;b3&quot;: &quot;&quot;,
+        &quot;b4&quot;: &quot;&quot;,
+        &quot;c3&quot;: &quot;&quot;,
+        &quot;c4&quot;: &quot;&quot;,
+        &quot;d3&quot;: &quot;&quot;,
+        &quot;d4&quot;: &quot;&quot;,
+        &quot;e3&quot;: &quot;&quot;,
+        &quot;e4&quot;: &quot;&quot;,
+        &quot;f3&quot;: &quot;&quot;,
+        &quot;f4&quot;: &quot;&quot;,
+        &quot;g3&quot;: &quot;&quot;,
+        &quot;g4&quot;: &quot;&quot;,
+        &quot;h3&quot;: &quot;&quot;,
+        &quot;h4&quot;: &quot;&quot;,
+        &quot;Na3&quot;: &quot;&quot;,
+        &quot;Nc3&quot;: &quot;&quot;,
+        &quot;Nf3&quot;: &quot;&quot;,
+        &quot;Nh3&quot;: &quot;&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;move&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;e4&quot;,
+      &quot;probabilities&quot;: {
+        &quot;b4&quot;: 0,
+        &quot;e3&quot;: 0,
+        &quot;b3&quot;: 0,
+        &quot;Na3&quot;: 0,
+        &quot;Nh3&quot;: 0,
+        &quot;h3&quot;: 0,
+        &quot;g3&quot;: 0,
+        &quot;a4&quot;: 0,
+        &quot;Nc3&quot;: 0.03,
+        &quot;a3&quot;: 0,
+        &quot;c4&quot;: 0.01,
+        &quot;h4&quot;: 0,
+        &quot;e4&quot;: 0.71,
+        &quot;g4&quot;: 0,
+        &quot;d3&quot;: 0,
+        &quot;d4&quot;: 0.08,
+        &quot;Nf3&quot;: 0.17,
+        &quot;f3&quot;: 0,
+        &quot;f4&quot;: 0,
+        &quot;c3&quot;: 0
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 485,
+    &quot;outputTokens&quot;: 179,
+    &quot;totalTokens&quot;: 664
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;move&quot;: 0.69
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.00002037&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGRW90RC59X0KMQV1VHFB&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="town" data-title="town">
@@ -202,6 +401,93 @@ AssertionError [ERR_ASSERTION]: same modal action for both events</code></pre>
 </ol>
 <h3>Verification</h3>
 <p>Three full checks, six bursts, 300 calls, 300 answers. The page was smoke-tested only through <code>/state</code>; the sprite movement (toward the event for investigate and join, away for flee, toward a neighbour for warn, speed from urgency) was not watched in a browser.</p>
+<h3>Structured input and output</h3>
+<p>Mara the baker hearing "Free bread at the bakery". Captured on 2026-09-19 at about 11:20 local time for this page, 237 ms round trip. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;name&quot;: &quot;Mara&quot;,
+    &quot;role&quot;: &quot;baker&quot;,
+    &quot;traits&quot;: &quot;cautious, generous&quot;,
+    &quot;energy&quot;: 0.8,
+    &quot;location&quot;: &quot;bakery&quot;,
+    &quot;heard&quot;: &quot;Free bread at the bakery&quot;,
+    &quot;event_location&quot;: &quot;bakery&quot;
+  },
+  &quot;questions&quot;: {
+    &quot;action&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;The character has just heard the event. What does this specific character, with these traits and this role, do next?&quot;,
+      &quot;criteria&quot;: {
+        &quot;ignore&quot;: &quot;Carries on with the current task; the event does not concern this character&quot;,
+        &quot;investigate&quot;: &quot;Goes to see what is happening&quot;,
+        &quot;join&quot;: &quot;Takes part in it, or helps the people involved&quot;,
+        &quot;flee&quot;: &quot;Gets away from it to somewhere safe&quot;,
+        &quot;warn&quot;: &quot;Goes to tell other people about it&quot;
+      }
+    },
+    &quot;urgency&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;instructions&quot;: &quot;How urgently does the character act on the event?&quot;,
+      &quot;criteria&quot;: [
+        &quot;none: no change of pace&quot;,
+        &quot;low: when convenient&quot;,
+        &quot;medium: soon&quot;,
+        &quot;high: right away&quot;,
+        &quot;extreme: drops everything and runs&quot;
+      ]
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;action&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;join&quot;,
+      &quot;probabilities&quot;: {
+        &quot;join&quot;: 0.68,
+        &quot;investigate&quot;: 0.21,
+        &quot;flee&quot;: 0,
+        &quot;ignore&quot;: 0.04,
+        &quot;warn&quot;: 0.07
+      }
+    },
+    &quot;urgency&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;score&quot;: 1.11,
+      &quot;probabilities&quot;: {
+        &quot;0&quot;: 0.13,
+        &quot;1&quot;: 0.69,
+        &quot;2&quot;: 0.12,
+        &quot;3&quot;: 0.06,
+        &quot;4&quot;: 0
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 547,
+    &quot;outputTokens&quot;: 71,
+    &quot;totalTokens&quot;: 618
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;action&quot;: 0.59,
+        &quot;urgency&quot;: 0.69
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.000022974&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGS65X6HEA91B7ZQGMVQV&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="sort" data-title="sort">
@@ -224,6 +510,64 @@ AssertionError [ERR_ASSERTION]: same modal action for both events</code></pre>
 <h3>Verification</h3>
 <pre><code>303/303 sorted in 13.8 s, 21.9/s, accuracy 93.7% on 303 labelled, $0.0059, bins {"billing":60,"technical":65,"sales":57,"spam":57,"other":64}</code></pre>
 <p>That run overlapped the log monitor's check (10 more calls in flight) and was not slower for it. The falling-dot canvas was not watched in a browser; the state it draws from was fetched and read.</p>
+<h3>Structured input and output</h3>
+<p>items.json[0]. Captured on 2026-09-19 at about 11:20 local time for this page, 235 ms round trip. items.json[0].label is "billing". The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;message&quot;: &quot;Why was I charged twice for my monthly subscription?&quot;
+  },
+  &quot;questions&quot;: {
+    &quot;bin&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;Which queue should this incoming message go to?&quot;,
+      &quot;criteria&quot;: {
+        &quot;billing&quot;: &quot;An existing account&#x27;s money: a charge, invoice, receipt, refund, tax form, or payment method&quot;,
+        &quot;technical&quot;: &quot;Bugs, errors, outages, setup problems, how a feature works&quot;,
+        &quot;sales&quot;: &quot;Before buying: wants to buy, upgrade, compare plans or prices, see a demo, get a quote, evaluate the product, or ask about contract terms&quot;,
+        &quot;spam&quot;: &quot;Unsolicited promotion, scams, nonsense, or unrelated mass mail&quot;,
+        &quot;other&quot;: &quot;Anything else: feedback, thanks, general questions, partnerships, sponsorships, events, research, job applications&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;bin&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;billing&quot;,
+      &quot;probabilities&quot;: {
+        &quot;technical&quot;: 0,
+        &quot;sales&quot;: 0,
+        &quot;billing&quot;: 1,
+        &quot;spam&quot;: 0,
+        &quot;other&quot;: 0
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 460,
+    &quot;outputTokens&quot;: 52,
+    &quot;totalTokens&quot;: 512
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;bin&quot;: 1
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.00001932&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGSDDRQBZ6J6MVA5FRSAW&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="logs" data-title="logs">
@@ -247,6 +591,98 @@ separation: highest routine 1.38, lowest incident 1.49; page_oncall > 0.5: 18/20
 <p>Same lines, same answers, five times the wall time, zero failures. The retries in <code>lib.mjs</code> absorbed whatever the gateway was doing. The live page at 5 lines per second would have shown the in-flight counter climbing into the hundreds.</p>
 <h3>Verification</h3>
 <p>Both checks passed on the rewritten assertions. The HTTP smoke test at 3 lines per second had scored 22 lines after 6 s with 1 in flight, first line severity 0.91, category db. The banner and chart were not watched in a browser.</p>
+<h3>Structured input and output</h3>
+<p>An incident line with three routine lines before it. Captured on 2026-09-19 at about 11:20 local time for this page, 2480 ms round trip. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;line&quot;: &quot;12:00:50 ERROR db connection pool exhausted (50/50), requests queuing&quot;,
+    &quot;previous_lines&quot;: [
+      &quot;12:00:47 INFO api GET /api/users 200 12ms&quot;,
+      &quot;12:00:48 INFO health check ok&quot;,
+      &quot;12:00:49 INFO db connection pool 12/50 in use&quot;
+    ]
+  },
+  &quot;questions&quot;: {
+    &quot;severity&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;instructions&quot;: &quot;How serious is this log line for the on-call engineer? The previous lines are context only.&quot;,
+      &quot;criteria&quot;: [
+        &quot;routine: normal operation&quot;,
+        &quot;warning: degraded but working; no user impact yet&quot;,
+        &quot;serious incident: users are affected; needs attention now&quot;,
+        &quot;outage: the service is down, or data is at risk&quot;
+      ]
+    },
+    &quot;page_oncall&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Should the on-call engineer be paged for this line right now?&quot;
+    },
+    &quot;category&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;Which subsystem does this line concern?&quot;,
+      &quot;criteria&quot;: {
+        &quot;db&quot;: &quot;Database, queries, replicas, connection pools&quot;,
+        &quot;network&quot;: &quot;Network, DNS, TLS, load balancers, latency between hosts&quot;,
+        &quot;auth&quot;: &quot;Logins, tokens, sessions, permissions&quot;,
+        &quot;app&quot;: &quot;Application code, jobs, deploys, memory, disk&quot;,
+        &quot;unknown&quot;: &quot;Cannot tell&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;severity&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;score&quot;: 2.02,
+      &quot;probabilities&quot;: {
+        &quot;0&quot;: 0,
+        &quot;1&quot;: 0.01,
+        &quot;2&quot;: 0.96,
+        &quot;3&quot;: 0.03
+      }
+    },
+    &quot;page_oncall&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.81
+    },
+    &quot;category&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;db&quot;,
+      &quot;probabilities&quot;: {
+        &quot;auth&quot;: 0,
+        &quot;app&quot;: 0,
+        &quot;unknown&quot;: 0,
+        &quot;db&quot;: 1,
+        &quot;network&quot;: 0
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 591,
+    &quot;outputTokens&quot;: 83,
+    &quot;totalTokens&quot;: 674
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;severity&quot;: 0.96,
+        &quot;category&quot;: 1
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.000024822&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGVRKYSX1VAR30BWJ8JSF&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="lane" data-title="lane">
@@ -269,6 +705,107 @@ total over 5 runs of 60 ticks (17 obstacles): Jev 13 collisions, rules 0, forwar
 <p>The spec's target is not met and the check no longer claims it. It asserts that Jev beats a driver that only goes forward (13 against 20) and prints the rule-based driver's 0 as the ceiling. Run 2's 8,567 ms mean is the gateway's slow half hour; every answer still arrived because the check waits with no tick.</p>
 <h3>Verification</h3>
 <p>The HTTP smoke test at an 800 ms tick ran 11 ticks in about 8 s: 0 late answers, 0 collisions, last decision forward at p 0.62 in 301 ms. So the late-answer path, which the check never exercises, was at least reached and returned zero on a fast minute. It was not exercised on a slow one.</p>
+<h3>Structured input and output</h3>
+<p>A car at speed 2 with a cone three lengths ahead in its lane and a car in the left lane. Captured on 2026-09-19 at about 11:20 local time for this page, 300 ms round trip. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;lane&quot;: 1,
+    &quot;lanes&quot;: 3,
+    &quot;speed&quot;: 2,
+    &quot;max_speed&quot;: 3,
+    &quot;obstacles&quot;: [
+      {
+        &quot;lane&quot;: 1,
+        &quot;distance&quot;: 3,
+        &quot;type&quot;: &quot;cone&quot;,
+        &quot;speed&quot;: 0,
+        &quot;same_lane&quot;: true,
+        &quot;ticks_to_impact&quot;: 1.5
+      },
+      {
+        &quot;lane&quot;: 0,
+        &quot;distance&quot;: 7,
+        &quot;type&quot;: &quot;car&quot;,
+        &quot;speed&quot;: 1,
+        &quot;same_lane&quot;: false,
+        &quot;ticks_to_impact&quot;: null
+      }
+    ],
+    &quot;goal&quot;: &quot;reach the end without a collision, as fast as possible&quot;
+  },
+  &quot;questions&quot;: {
+    &quot;action&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;You drive the car. Distances are in car lengths ahead; the car moves `speed` lengths per tick; cones are static and cars ahead move at their own speed. Which action for the next tick avoids a collision and keeps moving?&quot;,
+      &quot;criteria&quot;: {
+        &quot;forward&quot;: &quot;Keep the lane; speed up by one, up to the maximum of 3&quot;,
+        &quot;ease_left&quot;: &quot;Move one lane to the left, same speed&quot;,
+        &quot;ease_right&quot;: &quot;Move one lane to the right, same speed&quot;,
+        &quot;brake&quot;: &quot;Keep the lane; slow down by one&quot;,
+        &quot;stop&quot;: &quot;Keep the lane; speed becomes 0 this tick&quot;
+      }
+    },
+    &quot;danger&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;instructions&quot;: &quot;How close is a collision if the car keeps its lane and speed?&quot;,
+      &quot;criteria&quot;: [
+        &quot;none: nothing ahead within 10 lengths&quot;,
+        &quot;low: something ahead but more than 4 lengths away&quot;,
+        &quot;high: something ahead within 4 lengths&quot;,
+        &quot;imminent: a collision next tick&quot;
+      ]
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;action&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;ease_right&quot;,
+      &quot;probabilities&quot;: {
+        &quot;ease_right&quot;: 0.58,
+        &quot;stop&quot;: 0.01,
+        &quot;brake&quot;: 0.26,
+        &quot;ease_left&quot;: 0.06,
+        &quot;forward&quot;: 0.09
+      }
+    },
+    &quot;danger&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;score&quot;: 2.6,
+      &quot;probabilities&quot;: {
+        &quot;0&quot;: 0,
+        &quot;1&quot;: 0,
+        &quot;2&quot;: 0.39,
+        &quot;3&quot;: 0.61
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 658,
+    &quot;outputTokens&quot;: 70,
+    &quot;totalTokens&quot;: 728
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;action&quot;: 0.47,
+        &quot;danger&quot;: 0.6
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.000027636&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEGW2BS60R4CNQTTC5QBZS&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="skill-router" data-title="skill-router">
@@ -287,6 +824,72 @@ ok   "write every reply in simplified technical en" → asd-ste100 (p 1, conf 1,
 ok   "blindspot pass on Kubernetes networking" → blind-spot-pass (p 1, conf 1, 6926 ms, 9923 tokens)
 6/6 matched, 147 skills as options, $0.0025</code></pre>
 <p>The YouTube prompt sits at p 0.62 because two skills claim it. The 6,926 ms call is the slow half hour again. Not installed: each prompt would pay that latency, and the spec left the choice to the user.</p>
+<h3>Structured input and output</h3>
+<p>The prompt "wrap up my day" against every skill folder. Captured on 2026-09-19 at about 11:20 local time for this page, 12435 ms round trip. 148 options in the real request; 8 shown. The probabilities map is cut the same way, highest first. The 12,435 ms includes one gateway 503 burst and a 5 s wait before the retry that succeeded. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;user_prompt&quot;: &quot;wrap up my day&quot;
+  },
+  &quot;questions&quot;: {
+    &quot;skill&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;instructions&quot;: &quot;Which skill should the coding agent load to handle this user prompt? Pick none if no skill clearly applies.&quot;,
+      &quot;criteria&quot;: {
+        &quot;none&quot;: &quot;No skill applies; answer or act directly&quot;,
+        &quot;advise-project-approach&quot;: &quot;Research and advise on the best way to approach a software project, including architecture, tech stack, implementation strategy, pricing/operating-cost tradeoffs, benchmark research, and comparisons with similar real-world projects. Use before building, mid-build, or after completion when the user asks for project strategy, optimal approach, research comparables, similar projects, stack selection,&quot;,
+        &quot;agents&quot;: &quot;Build voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience, and when configuring an agent&#x27;s tools, workflows, or procedures, including creating, editing, compiling, and publishing procedure drafts on an agent branch over the SDKs or REST API.&quot;,
+        &quot;anthropic-design-system&quot;: &quot;Use this skill to generate well-branded interfaces and assets for Anthropic, either for production or throwaway prototypes/mocks/etc. Contains essential design guidelines, colors, type, fonts, assets, and UI kit components for prototyping.&quot;,
+        &quot;asd-ste100&quot;: &quot;Write all output in ASD-STE100 Simplified Technical English — short active sentences, one word one meaning, no idioms, numbered procedures. Use when the user says \&quot;ASD-STE100\&quot;, \&quot;STE\&quot;, \&quot;simplified technical english\&quot;, \&quot;technical manual style\&quot;, \&quot;write like a maintenance manual\&quot;, or invokes /asd-ste100. Keeps full technical substance; changes only the sentences.&quot;,
+        &quot;ask-cerebras-brain&quot;: &quot;Recall from the user&#x27;s personal knowledge base (the &#x27;cerebras brain&#x27;) — 632k rows of their own notes, docs, transcripts, code, and web captures over ~/Downloads/projects, served by the `kb` MCP server. Use whenever the user asks about THEIR OWN material: &#x27;what did I learn/try/do&#x27;, &#x27;my notes on X&#x27;, &#x27;where did I deal with Y&#x27;, &#x27;which project covered Z&#x27;, &#x27;have I looked at&#x27;, or any recall-shaped questi&quot;,
+        &quot;ask-matt&quot;: &quot;Ask which skill or flow fits your situation. A router over the skills in this repo.&quot;,
+        &quot;astryx-max&quot;: &quot;&gt;&quot;,
+        &quot;… 140 more options&quot;: &quot;&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;skill&quot;: {
+      &quot;type&quot;: &quot;choice&quot;,
+      &quot;choice&quot;: &quot;end-of-day-wrapup&quot;,
+      &quot;probabilities&quot;: {
+        &quot;end-of-day-wrapup&quot;: 1,
+        &quot;diagnosing-bugs&quot;: 0,
+        &quot;music&quot;: 0,
+        &quot;skills-from-sources&quot;: 0,
+        &quot;error-discovery&quot;: 0,
+        &quot;video-use&quot;: 0,
+        &quot;obsidian-bases&quot;: 0,
+        &quot;learn-reconstruct&quot;: 0,
+        &quot;… 140 more&quot;: 0
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 9920,
+    &quot;outputTokens&quot;: 1517,
+    &quot;totalTokens&quot;: 11437
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;skill&quot;: 1
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.00041664&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEH850XFEGXW3DVPYVHM91&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="verify" data-title="verify">
@@ -299,6 +902,151 @@ ok   "blindspot pass on Kubernetes networking" → blind-spot-pass (p 1, conf 1,
 <h3>Verification</h3>
 <pre><code>340 ms, 822 tokens, $0.00003; fired: secret 0.99, test_weakened 0.99, debug_left 0.98, unrelated 0.88; risk 2.99</code></pre>
 <p>Four fired, all four correct for the diff: a literal key, a <code>test.skip</code>, a <code>console.log</code> of the key, and two files changed for two reasons. Not measured: a real pull request. Not installed: the hook would add 300 to 1,000 ms to every Edit and Write.</p>
+<h3>Structured input and output</h3>
+<p>The synthetic diff from the check. Captured on 2026-09-19 at about 11:20 local time for this page, 336 ms round trip. The request is what <code>experimental_evaluate</code> sends: a model id, a <code>state</code> object, and a <code>questions</code> object. The response is what comes back: <code>answers</code> keyed by question id, token <code>usage</code>, and <code>providerMetadata</code> with the confidence map and the gateway cost.</p>
+<p><b>Request</b></p>
+<pre><code>{
+  &quot;model&quot;: &quot;typesafe-ai/jev&quot;,
+  &quot;state&quot;: {
+    &quot;git_diff&quot;: &quot;diff --git a/pay.mjs b/pay.mjs\n--- a/pay.mjs\n+++ b/pay.mjs\n@@ -1,6 +1,8 @@\n-const key = process.env.STRIPE_KEY;\n+const key = \&quot;prod-stripe-secret-2026-do-not-share-9f8e7d6c5b4a\&quot;;\n export async function charge(cents) {\n+  console.log(\&quot;charging\&quot;, cents, key);\n   return stripe.charges.create({ amount: cents, currency: \&quot;usd\&quot; });\n }\ndiff --git a/pay.test.mjs b/pay.test.mjs\n--- a/pay.test.mjs\n+++ b/pay.test.mjs\n@@ -3,4 +3,4 @@\n-test(\&quot;refuses a negative amount\&quot;, async () =&gt; {\n+test.skip(\&quot;refuses a negative amount\&quot;, async () =&gt; {\n   await assert.rejects(charge(-5));\n });\n&quot;,
+    &quot;truncated&quot;: false
+  },
+  &quot;questions&quot;: {
+    &quot;secret&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff add a hardcoded secret, API key, token, password, or private key?&quot;
+    },
+    &quot;test_weakened&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff delete, skip, or loosen a test or an assertion?&quot;
+    },
+    &quot;debug_left&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff leave debugging output in place (console.log, print, debugger, dump)?&quot;
+    },
+    &quot;errors_swallowed&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff catch an error and then ignore it, so a failure would pass silently?&quot;
+    },
+    &quot;placeholder&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff add a TODO, stub, or placeholder instead of the real implementation?&quot;
+    },
+    &quot;signature_change&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff change the signature or return shape of a function that other code may call?&quot;
+    },
+    &quot;new_dependency&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff add a new third-party dependency?&quot;
+    },
+    &quot;dead_code&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff add code that is commented out?&quot;
+    },
+    &quot;unrelated&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff mix changes that are unrelated to each other?&quot;
+    },
+    &quot;injection&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff build a SQL query, shell command, or HTML string from user-supplied input without escaping it?&quot;
+    },
+    &quot;shared_constant&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;instructions&quot;: &quot;Does the diff change a port, path, URL, environment variable name, or config key that other files may reference?&quot;
+    },
+    &quot;risk&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;instructions&quot;: &quot;How likely is this diff to break something for users if merged as is?&quot;,
+      &quot;criteria&quot;: [
+        &quot;safe: docs, comments, or clearly local changes&quot;,
+        &quot;low: small logic change with an obvious check&quot;,
+        &quot;medium: touches shared code or data handling&quot;,
+        &quot;high: changes control flow, error handling, security, or persistence without a test&quot;
+      ]
+    }
+  }
+}</code></pre>
+<p><b>Response</b></p>
+<pre><code>{
+  &quot;answers&quot;: {
+    &quot;secret&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.99
+    },
+    &quot;test_weakened&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.99
+    },
+    &quot;debug_left&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.98
+    },
+    &quot;errors_swallowed&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.19
+    },
+    &quot;placeholder&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.14
+    },
+    &quot;signature_change&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.07
+    },
+    &quot;new_dependency&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.04
+    },
+    &quot;dead_code&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.04
+    },
+    &quot;unrelated&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.9
+    },
+    &quot;injection&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.02
+    },
+    &quot;shared_constant&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;probability&quot;: 0.38
+    },
+    &quot;risk&quot;: {
+      &quot;type&quot;: &quot;score&quot;,
+      &quot;score&quot;: 3,
+      &quot;probabilities&quot;: {
+        &quot;0&quot;: 0,
+        &quot;1&quot;: 0,
+        &quot;2&quot;: 0,
+        &quot;3&quot;: 1
+      }
+    }
+  },
+  &quot;usage&quot;: {
+    &quot;inputTokens&quot;: 822,
+    &quot;outputTokens&quot;: 208,
+    &quot;totalTokens&quot;: 1030
+  },
+  &quot;providerMetadata&quot;: {
+    &quot;typesafe&quot;: {
+      &quot;confidence&quot;: {
+        &quot;risk&quot;: 1
+      }
+    },
+    &quot;gateway&quot;: {
+      &quot;routing&quot;: &quot;(routing block omitted: which provider served the call)&quot;,
+      &quot;cost&quot;: &quot;0&quot;,
+      &quot;marketCost&quot;: &quot;0.000034524&quot;,
+      &quot;surchargeCost&quot;: &quot;0&quot;,
+      &quot;gatewayCost&quot;: &quot;0&quot;,
+      &quot;generationId&quot;: &quot;gen_01M2XEH8G0X9YGBFDGHMD7T5RK&quot;
+    }
+  }
+}</code></pre>
 </section>
 
 <section id="docs" data-title="the pages">
