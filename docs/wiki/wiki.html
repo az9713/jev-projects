@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev Wiki Race</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:18px; margin:0 0 12px; color:var(--accent2); }
+  form { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  input { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; min-width:180px; }
+  button { background:var(--accent2); color:#0f172a; border:0; border-radius:8px; padding:8px 18px; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .stats { display:flex; flex-wrap:wrap; gap:8px 20px; color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .stats b { color:var(--text); }
+  .chain { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:18px; }
+  .node { background:var(--card); border:1px solid var(--border); border-radius:999px; padding:4px 12px; font-size:13px; }
+  .node.target { border-color:var(--accent2); color:var(--accent2); }
+  .arrow { color:var(--muted); }
+  .hops { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px; }
+  .hop { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .hop h2 { font-size:14px; margin:0 0 6px; color:var(--text); font-weight:600; }
+  .hop .meta { color:var(--muted); font-size:12px; margin-bottom:8px; }
+  .bars { display:grid; grid-template-columns:1fr 90px 40px; gap:3px 8px; font-size:12px; align-items:center; }
+  .bars span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar { background:#0f172a; border-radius:4px; overflow:hidden; height:12px; }
+  .bar i { display:block; height:100%; background:var(--accent2); }
+  .pick .bar i { background:var(--accent); }
+  .err { color:var(--err); }
+  .won { color:var(--accent2); font-weight:700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev wiki race</h1>
+  <p style="margin:-4px 0 12px;font-size:13px;color:#94a3b8">Replay of a real run recorded on 2026-09-19: Jev's answers, timings and cost as they happened, no server needed. 7 frames, 3 s. The button restarts the replay; the inputs are ignored. <a href="https://github.com/az9713/jev-projects" style="color:#2dd4bf">Run it locally</a> for live Jev.</p>
+  <form id="f">
+    <input id="start" value="Coffee" placeholder="Start article" required>
+    <input id="target" value="Napoleon" placeholder="Target article" required>
+    <button id="go">Race</button>
+  </form>
+  <div class="stats" id="stats"></div>
+  <div class="chain" id="chain"></div>
+  <div class="hops" id="hops"></div>
+</main>
+<script>
+  // Replay: /state returns the recorded frame for the elapsed time; a POST restarts the clock.
+  const FRAMES = [{"t":7,"s":{"done":true,"hops":[]}},{"t":67,"s":{"start":"Coffee","target":"Napoleon","done":false,"won":false,"ms":0,"usd":0,"error":null}},{"t":837,"s":{"start":"Coffee","target":"Napoleon","hops":[{"page":"Coffee","links":255,"pick":"Frederick II of Prussia","p":0.27,"conf":0.26,"top":[["Frederick II of Prussia",0.27],["Gustav III of Sweden's coffee experiment",0.16],["Gabriel de Clieu",0.14],["Battle of Vienna",0.12],["History of coffee",0.04]],"fetchMs":178,"jevMs":418,"usd":0.000108906}],"done":false,"won":false,"ms":820,"usd":0.000108906,"error":null}},{"t":1388,"s":{"start":"Coffee","target":"Napoleon","hops":[{"page":"Coffee","links":255,"pick":"Frederick II of Prussia","p":0.27,"conf":0.26,"top":[["Frederick II of Prussia",0.27],["Gustav III of Sweden's coffee experiment",0.16],["Gabriel de Clieu",0.14],["Battle of Vienna",0.12],["History of coffee",0.04]],"fetchMs":178,"jevMs":418,"usd":0.000108906},{"page":"Frederick the Great","links":255,"pick":"French Revolution","p":0.59,"conf":0.58,"top":[["French Revolution",0.59],["Enlightened absolutism",0.06999999999999999],["Fourth Coalition",0.05],["Age of Enlightenment",0.05],["Brandenburg-Prussia",0.03]],"fetchMs":241,"jevMs":295,"usd":0.000121548}],"done":false,"won":false,"ms":1356,"usd":0.000230454,"error":null}},{"t":1916,"s":{"start":"Coffee","target":"Napoleon","hops":[{"page":"Coffee","links":255,"pick":"Frederick II of Prussia","p":0.27,"conf":0.26,"top":[["Frederick II of Prussia",0.27],["Gustav III of Sweden's coffee experiment",0.16],["Gabriel de Clieu",0.14],["Battle of Vienna",0.12],["History of coffee",0.04]],"fetchMs":178,"jevMs":418,"usd":0.000108906},{"page":"Frederick the Great","links":255,"pick":"French Revolution","p":0.59,"conf":0.58,"top":[["French Revolution",0.59],["Enlightened absolutism",0.06999999999999999],["Fourth Coalition",0.05],["Age of Enlightenment",0.05],["Brandenburg-Prussia",0.03]],"fetchMs":241,"jevMs":295,"usd":0.000121548},{"page":"French Revolution","links":255,"pick":"Bonaparte at the Council of Five Hundred at Saint-Cloud","p":0.35000000000000003,"conf":0.34,"top":[["Bonaparte at the Council of Five Hundred at Saint-Cloud",0.35000000000000003],["Coup of 18 Brumaire",0.24000000000000002],["French Revolutionary Wars",0.17],["First French Empire",0.08],["Bonapartism",0.04]],"fetchMs":242,"jevMs":299,"usd":0.000124152}],"done":false,"won":false,"ms":1898,"usd":0.00035460600000000004,"error":null}},{"t":2359,"s":{"start":"Coffee","target":"Napoleon","hops":[{"page":"Coffee","links":255,"pick":"Frederick II of Prussia","p":0.27,"conf":0.26,"top":[["Frederick II of Prussia",0.27],["Gustav III of Sweden's coffee experiment",0.16],["Gabriel de Clieu",0.14],["Battle of Vienna",0.12],["History of coffee",0.04]],"fetchMs":178,"jevMs":418,"usd":0.000108906},{"page":"Frederick the Great","links":255,"pick":"French Revolution","p":0.59,"conf":0.58,"top":[["French Revolution",0.59],["Enlightened absolutism",0.06999999999999999],["Fourth Coalition",0.05],["Age of Enlightenment",0.05],["Brandenburg-Prussia",0.03]],"fetchMs":241,"jevMs":295,"usd":0.000121548},{"page":"French Revolution","links":255,"pick":"Bonaparte at the Council of Five Hundred at Saint-Cloud","p":0.35000000000000003,"conf":0.34,"top":[["Bonaparte at the Council of Five Hundred at Saint-Cloud",0.35000000000000003],["Coup of 18 Brumaire",0.24000000000000002],["French Revolutionary Wars",0.17],["First French Empire",0.08],["Bonapartism",0.04]],"fetchMs":242,"jevMs":299,"usd":0.000124152},{"page":"Bonaparte at the Council of Five Hundred at Saint-Cloud","links":26,"pick":"Napoleon Bonaparte","p":0.97,"conf":0.96,"top":[["Napoleon Bonaparte",0.97],["Coup of 18 Brumaire",0.03],["Napoleonic era",0],["Commissioned (art)",0],["Exposition Universelle (1889)",0]],"fetchMs":126,"jevMs":249,"usd":0.000024024}],"done":false,"won":false,"ms":2273,"usd":0.00037863,"error":null}},{"t":2577,"s":{"start":"Coffee","target":"Napoleon","hops":[{"page":"Coffee","links":255,"pick":"Frederick II of Prussia","p":0.27,"conf":0.26,"top":[["Frederick II of Prussia",0.27],["Gustav III of Sweden's coffee experiment",0.16],["Gabriel de Clieu",0.14],["Battle of Vienna",0.12],["History of coffee",0.04]],"fetchMs":178,"jevMs":418,"usd":0.000108906},{"page":"Frederick the Great","links":255,"pick":"French Revolution","p":0.59,"conf":0.58,"top":[["French Revolution",0.59],["Enlightened absolutism",0.06999999999999999],["Fourth Coalition",0.05],["Age of Enlightenment",0.05],["Brandenburg-Prussia",0.03]],"fetchMs":241,"jevMs":295,"usd":0.000121548},{"page":"French Revolution","links":255,"pick":"Bonaparte at the Council of Five Hundred at Saint-Cloud","p":0.35000000000000003,"conf":0.34,"top":[["Bonaparte at the Council of Five Hundred at Saint-Cloud",0.35000000000000003],["Coup of 18 Brumaire",0.24000000000000002],["French Revolutionary Wars",0.17],["First French Empire",0.08],["Bonapartism",0.04]],"fetchMs":242,"jevMs":299,"usd":0.000124152},{"page":"Bonaparte at the Council of Five Hundred at Saint-Cloud","links":26,"pick":"Napoleon Bonaparte","p":0.97,"conf":0.96,"top":[["Napoleon Bonaparte",0.97],["Coup of 18 Brumaire",0.03],["Napoleonic era",0],["Commissioned (art)",0],["Exposition Universelle (1889)",0]],"fetchMs":126,"jevMs":249,"usd":0.000024024}],"won":true,"ms":2516,"usd":0.00037863,"error":null}}], REC0 = 1789845596032;
+  let start = performance.now(), shift = Date.now() - REC0;
+  // ponytail: any number that looks like an epoch ms (town.started, logs.paged.at) is moved to replay time.
+  const fix = (v) => typeof v === "number" ? (v > 1e12 ? v + shift : v) : Array.isArray(v) ? v.map(fix) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x)])) : v;
+  window.fetch = async (url, opts) => {
+    if (opts?.method === "POST") { start = performance.now(); shift = Date.now() - REC0; return new Response("{}"); }
+    const el = performance.now() - start; let f = FRAMES[0];
+    for (const x of FRAMES) { if (x.t <= el) f = x; else break; }
+    return new Response(JSON.stringify(fix({ ...FRAMES[0].s, ...f.s })));
+  };
+</script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  let last = "";
+  async function poll() {
+    const s = await (await fetch("/state")).json();
+    const key = JSON.stringify(s);
+    if (key !== last) { last = key; render(s); }
+    $("go").disabled = !s.done;
+    setTimeout(poll, 300);
+  }
+  function render(s) {
+    if (!s.start) { $("stats").textContent = "Type a start and a target. Jev picks one link per hop from up to 255 options."; return; }
+    const jev = s.hops.reduce((a, h) => a + h.jevMs, 0), wiki = s.hops.reduce((a, h) => a + h.fetchMs, 0);
+    $("stats").innerHTML = `<span><b>${s.hops.length}</b> hops</span><span><b>${(s.ms / 1000).toFixed(1)} s</b> total</span>` +
+      `<span>Jev <b>${jev} ms</b></span><span>Wikipedia <b>${wiki} ms</b></span><span><b>$${s.usd.toFixed(5)}</b></span>` +
+      (s.done ? (s.won ? `<span class="won">reached ${esc(s.target)}</span>` : `<span class="err">${esc(s.error || "hop cap reached")}</span>`) : `<span>running…</span>`);
+    const nodes = [s.start, ...s.hops.map((h) => h.pick)];
+    $("chain").innerHTML = nodes.map((n, i) => `${i ? '<span class="arrow">→</span>' : ""}<span class="node${n === s.target || (s.won && i === nodes.length - 1) ? " target" : ""}">${esc(n)}</span>`).join("");
+    $("hops").innerHTML = s.hops.map((h, i) => `<div class="hop"><h2>${i + 1}. ${esc(h.page)}</h2>` +
+      `<div class="meta">${h.links} options · Jev ${h.jevMs} ms · fetch ${h.fetchMs} ms · conf ${h.conf ?? "-"} · $${h.usd.toFixed(5)}</div><div class="bars">` +
+      h.top.map(([t, p]) => `<span class="${t === h.pick ? "pick" : ""}" style="display:contents"><span title="${esc(t)}">${esc(t)}</span><span class="bar"><i style="width:${Math.round(p * 100)}%"></i></span><span>${p.toFixed(2)}</span></span>`).join("") +
+      `</div></div>`).join("");
+  }
+  $("f").onsubmit = async (e) => {
+    e.preventDefault();
+    $("go").disabled = true;
+    const r = await (await fetch("/race", { method: "POST", body: JSON.stringify({ start: $("start").value.trim(), target: $("target").value.trim() }) })).json();
+    if (r.error) { $("stats").innerHTML = `<span class="err">${esc(r.error)}</span>`; $("go").disabled = false; }
+  };
+  poll();
+</script>
+</body>
+</html>

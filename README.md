@@ -12,17 +12,19 @@ Every page puts the measured latency on screen. The videos show demos from machi
 
 ## Projects
 
-| Project | Port | What Jev decides | Check result (2026-09-19) |
-|---|---|---|---|
-| `probe-burst.mjs` | – | Nothing; fires 50 calls at once | 48/50 ok, burst 7.8 s, median 1,230 ms per call |
-| `wiki/` | 3001 | Which of up to 255 links on a Wikipedia page leads to the target | 5/5 races Coffee → Napoleon, 4 to 7 hops, 2.3 to 5.7 s |
-| `town/` | 3002 | What each of 50 characters does when an event is announced, all in one burst | 50/50 answered in 2.7 to 10 s; the wolf raises 21 flee+warn, free bread 3 |
-| `chess/` | 3003 | Which legal move to play, on a one-minute clock | 5 wins, 5 draws, 0 losses in 10 games vs a random mover; 465 ms per move |
-| `sort/` | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
-| `logs/` | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
-| `lane/` | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
-| `hooks/skill-router.mjs` | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
-| `hooks/verify.mjs` | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
+| Project | Page | Port | What Jev decides | Check result (2026-09-19) |
+|---|---|---|---|---|
+| `probe-burst.mjs` | – | – | Nothing; fires 50 calls at once | 48/50 ok, burst 7.8 s, median 1,230 ms per call |
+| `wiki/` | [wiki race](https://az9713.github.io/jev-projects/wiki/wiki.html) | 3001 | Which of up to 255 links on a Wikipedia page leads to the target | 5/5 races Coffee → Napoleon, 4 to 7 hops, 2.3 to 5.7 s |
+| `town/` | [town of agents](https://az9713.github.io/jev-projects/town/town.html) | 3002 | What each of 50 characters does when an event is announced, all in one burst | 50/50 answered in 2.7 to 10 s; the wolf raises 21 flee+warn, free bread 3 |
+| `chess/` | [bullet chess](https://az9713.github.io/jev-projects/chess/chess.html) | 3003 | Which legal move to play, on a one-minute clock | 5 wins, 5 draws, 0 losses in 10 games vs a random mover; 465 ms per move |
+| `sort/` | [sort at scale](https://az9713.github.io/jev-projects/sort/sort.html) | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
+| `logs/` | [log monitor](https://az9713.github.io/jev-projects/logs/logs.html) | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
+| `lane/` | [lane sim](https://az9713.github.io/jev-projects/lane/lane.html) | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
+| `hooks/skill-router.mjs` | – | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
+| `hooks/verify.mjs` | – | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
+
+The **Page** links open each project's own HTML on GitHub Pages. Pages has no Node server and no gateway key, so each page there replays one real run recorded on 2026-09-19: the same page, fed the `/state` frames that were recorded, with Jev's real answers, timings, and cost. The button restarts the replay. `node record.mjs [name]` records a fresh run into `docs/<name>/<name>.html`.
 
 ## One real call per project
 
