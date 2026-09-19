@@ -1,0 +1,406 @@
+{
+  "places": [
+    {
+      "name": "bakery",
+      "x": 20,
+      "y": 30
+    },
+    {
+      "name": "mill",
+      "x": 60,
+      "y": 20
+    },
+    {
+      "name": "gate",
+      "x": 10,
+      "y": 50
+    },
+    {
+      "name": "well",
+      "x": 50,
+      "y": 50
+    },
+    {
+      "name": "market",
+      "x": 45,
+      "y": 45
+    },
+    {
+      "name": "tavern",
+      "x": 55,
+      "y": 60
+    },
+    {
+      "name": "forge",
+      "x": 30,
+      "y": 65
+    },
+    {
+      "name": "farm",
+      "x": 80,
+      "y": 70
+    },
+    {
+      "name": "chapel",
+      "x": 35,
+      "y": 15
+    },
+    {
+      "name": "river",
+      "x": 70,
+      "y": 40
+    }
+  ],
+  "characters": [
+    {
+      "name": "Mara",
+      "role": "baker",
+      "traits": "cautious, generous",
+      "place": "bakery",
+      "energy": 0.8
+    },
+    {
+      "name": "Tobin",
+      "role": "miller",
+      "traits": "lazy, kind",
+      "place": "mill",
+      "energy": 0.5
+    },
+    {
+      "name": "Garrick",
+      "role": "gatekeeper",
+      "traits": "suspicious, brave",
+      "place": "gate",
+      "energy": 0.6
+    },
+    {
+      "name": "Father Elric",
+      "role": "priest",
+      "traits": "wise, gentle",
+      "place": "chapel",
+      "energy": 0.7
+    },
+    {
+      "name": "Borin",
+      "role": "blacksmith",
+      "traits": "strong, gruff",
+      "place": "forge",
+      "energy": 0.9
+    },
+    {
+      "name": "Fenwick",
+      "role": "thief",
+      "traits": "sly, nervous",
+      "place": "market",
+      "energy": 0.6
+    },
+    {
+      "name": "Sela",
+      "role": "healer",
+      "traits": "kind, patient",
+      "place": "chapel",
+      "energy": 0.7
+    },
+    {
+      "name": "Pip",
+      "role": "child",
+      "traits": "curious, playful",
+      "place": "well",
+      "energy": 0.9
+    },
+    {
+      "name": "Nell",
+      "role": "child",
+      "traits": "shy, nosy",
+      "place": "market",
+      "energy": 0.8
+    },
+    {
+      "name": "Cobb",
+      "role": "child",
+      "traits": "mischievous, brave",
+      "place": "river",
+      "energy": 0.85
+    },
+    {
+      "name": "Tilly",
+      "role": "child",
+      "traits": "cheerful, clumsy",
+      "place": "bakery",
+      "energy": 0.9
+    },
+    {
+      "name": "Wren",
+      "role": "child",
+      "traits": "quiet, dreamy",
+      "place": "farm",
+      "energy": 0.8
+    },
+    {
+      "name": "Old Hesper",
+      "role": "elder",
+      "traits": "wise, stubborn",
+      "place": "well",
+      "energy": 0.4
+    },
+    {
+      "name": "Grannie Vex",
+      "role": "elder",
+      "traits": "sharp-tongued, kind",
+      "place": "market",
+      "energy": 0.3
+    },
+    {
+      "name": "Uncle Bram",
+      "role": "elder",
+      "traits": "forgetful, jolly",
+      "place": "tavern",
+      "energy": 0.35
+    },
+    {
+      "name": "Widow Yara",
+      "role": "elder",
+      "traits": "superstitious, lonely",
+      "place": "chapel",
+      "energy": 0.4
+    },
+    {
+      "name": "Elder Doran",
+      "role": "elder",
+      "traits": "patient, wise",
+      "place": "well",
+      "energy": 0.3
+    },
+    {
+      "name": "Alder",
+      "role": "farmer",
+      "traits": "hardworking, humble",
+      "place": "farm",
+      "energy": 0.7
+    },
+    {
+      "name": "Brenna",
+      "role": "farmer",
+      "traits": "cheerful, strong",
+      "place": "farm",
+      "energy": 0.75
+    },
+    {
+      "name": "Corin",
+      "role": "farmer",
+      "traits": "grumpy, loyal",
+      "place": "farm",
+      "energy": 0.6
+    },
+    {
+      "name": "Della",
+      "role": "farmer",
+      "traits": "kind, tired",
+      "place": "farm",
+      "energy": 0.5
+    },
+    {
+      "name": "Ewan",
+      "role": "farmer",
+      "traits": "stubborn, brave",
+      "place": "farm",
+      "energy": 0.65
+    },
+    {
+      "name": "Fira",
+      "role": "farmer",
+      "traits": "gentle, shy",
+      "place": "farm",
+      "energy": 0.55
+    },
+    {
+      "name": "Gunnar",
+      "role": "farmer",
+      "traits": "strong, silent",
+      "place": "farm",
+      "energy": 0.7
+    },
+    {
+      "name": "Hilde",
+      "role": "farmer",
+      "traits": "cheerful, nosy",
+      "place": "farm",
+      "energy": 0.6
+    },
+    {
+      "name": "Ivo",
+      "role": "trader",
+      "traits": "greedy, clever",
+      "place": "market",
+      "energy": 0.7
+    },
+    {
+      "name": "Jora",
+      "role": "trader",
+      "traits": "charming, dishonest",
+      "place": "market",
+      "energy": 0.65
+    },
+    {
+      "name": "Kester",
+      "role": "trader",
+      "traits": "shrewd, patient",
+      "place": "market",
+      "energy": 0.6
+    },
+    {
+      "name": "Liora",
+      "role": "trader",
+      "traits": "friendly, curious",
+      "place": "market",
+      "energy": 0.75
+    },
+    {
+      "name": "Milo",
+      "role": "trader",
+      "traits": "ambitious, sly",
+      "place": "market",
+      "energy": 0.7
+    },
+    {
+      "name": "Nadia",
+      "role": "trader",
+      "traits": "bold, greedy",
+      "place": "market",
+      "energy": 0.68
+    },
+    {
+      "name": "Osric",
+      "role": "guard",
+      "traits": "brave, loyal",
+      "place": "gate",
+      "energy": 0.8
+    },
+    {
+      "name": "Perrin",
+      "role": "guard",
+      "traits": "vigilant, stern",
+      "place": "gate",
+      "energy": 0.75
+    },
+    {
+      "name": "Quinlan",
+      "role": "guard",
+      "traits": "lazy, tough",
+      "place": "gate",
+      "energy": 0.6
+    },
+    {
+      "name": "Roswell",
+      "role": "guard",
+      "traits": "fearless, reckless",
+      "place": "market",
+      "energy": 0.85
+    },
+    {
+      "name": "Soren",
+      "role": "guard",
+      "traits": "calm, disciplined",
+      "place": "well",
+      "energy": 0.7
+    },
+    {
+      "name": "Tam",
+      "role": "weaver",
+      "traits": "meticulous, quiet",
+      "place": "market",
+      "energy": 0.6
+    },
+    {
+      "name": "Ursa",
+      "role": "tanner",
+      "traits": "tough, blunt",
+      "place": "forge",
+      "energy": 0.65
+    },
+    {
+      "name": "Vidar",
+      "role": "carpenter",
+      "traits": "practical, patient",
+      "place": "forge",
+      "energy": 0.7
+    },
+    {
+      "name": "Wynn",
+      "role": "herbalist",
+      "traits": "curious, gentle",
+      "place": "chapel",
+      "energy": 0.6
+    },
+    {
+      "name": "Xara",
+      "role": "innkeeper",
+      "traits": "jovial, talkative",
+      "place": "tavern",
+      "energy": 0.75
+    },
+    {
+      "name": "Yorick",
+      "role": "fisherman",
+      "traits": "patient, quiet",
+      "place": "river",
+      "energy": 0.6
+    },
+    {
+      "name": "Zara",
+      "role": "shepherd",
+      "traits": "kind, watchful",
+      "place": "farm",
+      "energy": 0.55
+    },
+    {
+      "name": "Aldric",
+      "role": "mason",
+      "traits": "strong, steady",
+      "place": "forge",
+      "energy": 0.68
+    },
+    {
+      "name": "Beatrix",
+      "role": "cooper",
+      "traits": "meticulous, gruff",
+      "place": "forge",
+      "energy": 0.6
+    },
+    {
+      "name": "Cassian",
+      "role": "scribe",
+      "traits": "intelligent, timid",
+      "place": "chapel",
+      "energy": 0.5
+    },
+    {
+      "name": "Doreen",
+      "role": "beggar",
+      "traits": "desperate, sly",
+      "place": "gate",
+      "energy": 0.3
+    },
+    {
+      "name": "Egan",
+      "role": "hunter",
+      "traits": "brave, solitary",
+      "place": "river",
+      "energy": 0.7
+    },
+    {
+      "name": "Fiona",
+      "role": "seamstress",
+      "traits": "creative, kind",
+      "place": "market",
+      "energy": 0.65
+    },
+    {
+      "name": "Garth",
+      "role": "stablehand",
+      "traits": "loyal, hardworking",
+      "place": "farm",
+      "energy": 0.6
+    }
+  ]
+}

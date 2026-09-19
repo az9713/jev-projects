@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev Sort at Scale</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:18px; margin:0 0 12px; color:var(--accent2); }
+  form { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  input { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; width:90px; }
+  button { background:var(--accent2); color:#0f172a; border:0; border-radius:8px; padding:8px 18px; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .grid { display:grid; grid-template-columns:1fr 340px; gap:16px; align-items:start; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+  canvas { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:12px; font-size:13px; }
+  .card h2 { font-size:14px; margin:0 0 8px; }
+  .stats { display:flex; flex-wrap:wrap; gap:4px 16px; color:var(--muted); }
+  .stats b { color:var(--text); }
+  .hist { display:grid; grid-template-columns:repeat(10, 1fr); gap:3px; align-items:end; height:70px; }
+  .hist i { display:block; background:var(--accent2); border-radius:3px 3px 0 0; }
+  .hist-labels { display:grid; grid-template-columns:repeat(10, 1fr); font-size:10px; color:var(--muted); text-align:center; }
+  .recent { max-height:300px; overflow:auto; font-size:12px; line-height:1.5; }
+  .recent .miss { color:var(--accent); }
+  .err { color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev sort at scale</h1>
+  <form id="f">
+    <label>Items <input id="n" type="number" value="1000" min="1" max="20000"></label>
+    <button id="go">Start</button>
+    <span id="hint" style="color:var(--muted);font-size:13px"></span>
+  </form>
+  <div class="grid">
+    <div><canvas id="cv" width="860" height="520"></canvas></div>
+    <div>
+      <div class="card"><div class="stats" id="stats"></div></div>
+      <div class="card"><h2>Confidence of the chosen bin</h2><div class="hist" id="hist"></div><div class="hist-labels" id="histl"></div></div>
+      <div class="card"><h2>Latest</h2><div class="recent" id="recent"></div></div>
+    </div>
+  </div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const COLOR = ["#2dd4bf", "#fb923c", "#a78bfa", "#f87171", "#94a3b8"];
+  const cv = $("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  let bins = [], state = null, seenDone = 0, dots = [], counts = {};
+  const binX = (i) => (i + 0.5) * W / Math.max(1, bins.length);
+  function spawn(r) {
+    const b = bins.indexOf(r.bin);
+    if (b < 0) return;
+    dots.push({ x: W / 2 + (Math.random() - 0.5) * 80, y: 0, tx: binX(b) + (Math.random() - 0.5) * 60, ty: H - 40 - (counts[r.bin] % 40) * 2, c: COLOR[b], t: 0 });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    bins.forEach((b, i) => {
+      const x = binX(i), w = W / bins.length - 20, fill = state ? (state.counts[b] || 0) : 0, total = state ? Math.max(1, state.done) : 1;
+      ctx.fillStyle = "#0f172a"; ctx.fillRect(x - w / 2, H - 160, w, 150);
+      ctx.fillStyle = COLOR[i]; ctx.globalAlpha = .35; ctx.fillRect(x - w / 2, H - 10 - 150 * fill / total, w, 150 * fill / total); ctx.globalAlpha = 1;
+      ctx.font = "13px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = "#e2e8f0"; ctx.fillText(`${b} ${fill}`, x, H - 170);
+    });
+    for (const d of dots) {
+      d.t = Math.min(1, d.t + 0.03);
+      const e = 1 - (1 - d.t) ** 2, x = d.x + (d.tx - d.x) * e, y = d.y + (d.ty - d.y) * e - Math.sin(d.t * Math.PI) * 40;
+      ctx.fillStyle = d.c; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill();
+    }
+    dots = dots.filter((d) => d.t < 1);
+    requestAnimationFrame(draw);
+  }
+  async function poll() {
+    const s = await (await fetch("/state")).json();
+    bins = s.bins; state = s;
+    if (s.done < seenDone) { seenDone = 0; counts = {}; }
+    const fresh = s.recent.slice(0, Math.min(s.recent.length, s.done - seenDone)).reverse();
+    for (const r of fresh) { counts[r.bin] = (counts[r.bin] || 0) + 1; spawn(r); }
+    seenDone = s.done;
+    render(s);
+    $("go").disabled = s.running;
+    setTimeout(poll, 250);
+  }
+  function render(s) {
+    const acc = s.labelled ? `<span>accuracy <b>${(100 * s.correct / s.labelled).toFixed(1)}%</b> on ${s.labelled} labelled</span>` : "";
+    $("stats").innerHTML = `<span><b>${s.done}/${s.total}</b> sorted</span><span><b>${s.perSec}</b> items/s</span><span><b>${(s.ms / 1000).toFixed(1)} s</b></span><span><b>$${(s.usd || 0).toFixed(4)}</b></span>${acc}` + (s.running ? "<span>running…</span>" : "");
+    const mx = Math.max(1, ...s.conf);
+    $("hist").innerHTML = s.conf.map((c) => `<i style="height:${Math.round(100 * c / mx)}%" title="${c}"></i>`).join("");
+    $("histl").innerHTML = s.conf.map((_, i) => `<span>${(i / 10).toFixed(1)}</span>`).join("");
+    $("recent").innerHTML = s.recent.slice(0, 25).map((r) => r.error ? `<div class="err">${esc(r.error)}</div>` :
+      `<div class="${r.label && r.label !== r.bin ? "miss" : ""}"><b style="color:${COLOR[bins.indexOf(r.bin)]}">${r.bin}</b> ${r.p.toFixed(2)} · ${esc(r.text)}${r.label && r.label !== r.bin ? ` <i>(label ${r.label})</i>` : ""}</div>`).join("");
+    $("hint").textContent = `${s.total} items in items.json; larger counts cycle through them.`;
+  }
+  $("f").onsubmit = async (e) => {
+    e.preventDefault(); $("go").disabled = true;
+    const r = await (await fetch("/start", { method: "POST", body: JSON.stringify({ n: $("n").value }) })).json();
+    if (r.error) { $("stats").innerHTML = `<span class="err">${esc(r.error)}</span>`; $("go").disabled = false; }
+  };
+  poll(); draw();
+</script>
+</body>
+</html>

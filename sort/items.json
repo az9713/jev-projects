@@ -1,0 +1,1214 @@
+[
+ {
+  "text": "Why was I charged twice for my monthly subscription?",
+  "label": "billing"
+ },
+ {
+  "text": "Please cancel my subscription and refund the last payment.",
+  "label": "billing"
+ },
+ {
+  "text": "I never received an invoice for last month's payment.",
+  "label": "billing"
+ },
+ {
+  "text": "Can you explain the extra fee on my recent bill?",
+  "label": "billing"
+ },
+ {
+  "text": "My credit card was declined but I was still billed somehow.",
+  "label": "billing"
+ },
+ {
+  "text": "I'd like to switch from annual to monthly billing.",
+  "label": "billing"
+ },
+ {
+  "text": "There's a discrepancy between the quote and the final invoice.",
+  "label": "billing"
+ },
+ {
+  "text": "How do I update my payment method on file?",
+  "label": "billing"
+ },
+ {
+  "text": "I was charged after cancelling my account weeks ago.",
+  "label": "billing"
+ },
+ {
+  "text": "Requesting a copy of all invoices from this year.",
+  "label": "billing"
+ },
+ {
+  "text": "Why did my subscription price increase without notice?",
+  "label": "billing"
+ },
+ {
+  "text": "Can I get a refund for an accidental purchase?",
+  "label": "billing"
+ },
+ {
+  "text": "The coupon code didn't apply at checkout.",
+  "label": "billing"
+ },
+ {
+  "text": "I need help understanding the taxes on my invoice.",
+  "label": "billing"
+ },
+ {
+  "text": "My account shows a past due balance that I already paid.",
+  "label": "billing"
+ },
+ {
+  "text": "Please send me a receipt for last week's transaction.",
+  "label": "billing"
+ },
+ {
+  "text": "I want to downgrade my plan to save money.",
+  "label": "billing"
+ },
+ {
+  "text": "This is the third time I've been billed incorrectly!",
+  "label": "billing"
+ },
+ {
+  "text": "Is there a discount for nonprofit organizations?",
+  "label": "billing"
+ },
+ {
+  "text": "I was billed in the wrong currency.",
+  "label": "billing"
+ },
+ {
+  "text": "Can you prorate my refund since I cancelled mid-cycle?",
+  "label": "billing"
+ },
+ {
+  "text": "Why does my invoice show two separate service charges?",
+  "label": "billing"
+ },
+ {
+  "text": "I need to update the billing address on my account.",
+  "label": "billing"
+ },
+ {
+  "text": "My free trial converted to paid without warning.",
+  "label": "billing"
+ },
+ {
+  "text": "Please stop auto-renewing my subscription.",
+  "label": "billing"
+ },
+ {
+  "text": "I was charged for a seat I never added.",
+  "label": "billing"
+ },
+ {
+  "text": "How can I get an itemized breakdown of my bill?",
+  "label": "billing"
+ },
+ {
+  "text": "There seems to be a duplicate charge on my statement.",
+  "label": "billing"
+ },
+ {
+  "text": "I'd like to add a purchase order number to my invoice.",
+  "label": "billing"
+ },
+ {
+  "text": "My payment failed but the service still got suspended.",
+  "label": "billing"
+ },
+ {
+  "text": "Can I pay via bank transfer instead of credit card?",
+  "label": "billing"
+ },
+ {
+  "text": "Why is VAT not included in the listed price?",
+  "label": "billing"
+ },
+ {
+  "text": "I need a refund because the product didn't meet expectations.",
+  "label": "billing"
+ },
+ {
+  "text": "This invoice number doesn't match any order I placed.",
+  "label": "billing"
+ },
+ {
+  "text": "Please confirm my subscription has been cancelled.",
+  "label": "billing"
+ },
+ {
+  "text": "I was charged for an upgrade I didn't request.",
+  "label": "billing"
+ },
+ {
+  "text": "Can you waive the late payment fee this one time?",
+  "label": "billing"
+ },
+ {
+  "text": "How do I view my full billing history?",
+  "label": "billing"
+ },
+ {
+  "text": "My company needs a W-9 form for accounting purposes.",
+  "label": "billing"
+ },
+ {
+  "text": "The renewal charge was higher than the original quote.",
+  "label": "billing"
+ },
+ {
+  "text": "I accidentally purchased the wrong tier plan.",
+  "label": "billing"
+ },
+ {
+  "text": "Can someone check why my refund hasn't processed yet?",
+  "label": "billing"
+ },
+ {
+  "text": "I'm being billed for a service I already cancelled months ago.",
+  "label": "billing"
+ },
+ {
+  "text": "Do you offer multi-year discounts for enterprise billing?",
+  "label": "billing"
+ },
+ {
+  "text": "My invoice total doesn't match what we agreed upon.",
+  "label": "billing"
+ },
+ {
+  "text": "Please remove the old credit card from my billing profile.",
+  "label": "billing"
+ },
+ {
+  "text": "I need clarification on the proration charges this month.",
+  "label": "billing"
+ },
+ {
+  "text": "Why was my card charged before the trial period ended?",
+  "label": "billing"
+ },
+ {
+  "text": "Requesting an extension on this month's payment due date.",
+  "label": "billing"
+ },
+ {
+  "text": "The billing portal keeps giving me an error when I try to pay.",
+  "label": "billing"
+ },
+ {
+  "text": "Can you combine my two accounts into a single invoice?",
+  "label": "billing"
+ },
+ {
+  "text": "I overpaid last month, can that be applied to next month's bill?",
+  "label": "billing"
+ },
+ {
+  "text": "There's an unauthorized charge on my account, please investigate.",
+  "label": "billing"
+ },
+ {
+  "text": "How do I cancel autopay for my subscription?",
+  "label": "billing"
+ },
+ {
+  "text": "I need an invoice reissued with our updated company name.",
+  "label": "billing"
+ },
+ {
+  "text": "My refund was processed to the wrong bank account.",
+  "label": "billing"
+ },
+ {
+  "text": "Can you tell me when my next billing cycle starts?",
+  "label": "billing"
+ },
+ {
+  "text": "I was charged the enterprise rate instead of the standard rate.",
+  "label": "billing"
+ },
+ {
+  "text": "Please explain the difference between the two charges this month.",
+  "label": "billing"
+ },
+ {
+  "text": "I'd like to dispute a charge from three months ago.",
+  "label": "billing"
+ },
+ {
+  "text": "The app keeps crashing every time I open the dashboard.",
+  "label": "technical"
+ },
+ {
+  "text": "I can't log into my account even after resetting my password.",
+  "label": "technical"
+ },
+ {
+  "text": "Getting a 500 error whenever I try to upload files.",
+  "label": "technical"
+ },
+ {
+  "text": "The API returns null even though data exists in the database.",
+  "label": "technical"
+ },
+ {
+  "text": "Your mobile app freezes on the loading screen.",
+  "label": "technical"
+ },
+ {
+  "text": "I'm unable to sync my calendar with your platform.",
+  "label": "technical"
+ },
+ {
+  "text": "The export feature isn't generating the CSV file correctly.",
+  "label": "technical"
+ },
+ {
+  "text": "Two-factor authentication isn't sending me the code.",
+  "label": "technical"
+ },
+ {
+  "text": "Why does the dashboard load so slowly during peak hours?",
+  "label": "technical"
+ },
+ {
+  "text": "There's a bug causing duplicate entries in my reports.",
+  "label": "technical"
+ },
+ {
+  "text": "The search function returns irrelevant results.",
+  "label": "technical"
+ },
+ {
+  "text": "My integration with Slack stopped working yesterday.",
+  "label": "technical"
+ },
+ {
+  "text": "I keep getting logged out randomly throughout the day.",
+  "label": "technical"
+ },
+ {
+  "text": "The webhook isn't firing when new orders come in.",
+  "label": "technical"
+ },
+ {
+  "text": "Uploading large files causes the app to crash.",
+  "label": "technical"
+ },
+ {
+  "text": "Can you help me troubleshoot a broken API key?",
+  "label": "technical"
+ },
+ {
+  "text": "The password reset link is expired immediately.",
+  "label": "technical"
+ },
+ {
+  "text": "Your software shows a blank screen after the latest update.",
+  "label": "technical"
+ },
+ {
+  "text": "I'm experiencing severe lag when switching between tabs.",
+  "label": "technical"
+ },
+ {
+  "text": "The notification system isn't sending emails anymore.",
+  "label": "technical"
+ },
+ {
+  "text": "My data disappeared after the recent migration.",
+  "label": "technical"
+ },
+ {
+  "text": "There's a rendering issue with charts on Firefox.",
+  "label": "technical"
+ },
+ {
+  "text": "The mobile app won't update past version 3.2.",
+  "label": "technical"
+ },
+ {
+  "text": "I can't connect my database due to an SSL error.",
+  "label": "technical"
+ },
+ {
+  "text": "Your OAuth integration keeps throwing invalid token errors.",
+  "label": "technical"
+ },
+ {
+  "text": "The site is throwing a 404 error on the settings page.",
+  "label": "technical"
+ },
+ {
+  "text": "Why do my reports fail to generate every Friday?",
+  "label": "technical"
+ },
+ {
+  "text": "I'm getting a memory leak warning in the desktop client.",
+  "label": "technical"
+ },
+ {
+  "text": "The chatbot widget isn't loading on our website anymore.",
+  "label": "technical"
+ },
+ {
+  "text": "Can you check why bulk uploads are timing out?",
+  "label": "technical"
+ },
+ {
+  "text": "The dark mode setting resets every time I log in.",
+  "label": "technical"
+ },
+ {
+  "text": "There's a conflict between your plugin and WordPress.",
+  "label": "technical"
+ },
+ {
+  "text": "My account got locked after multiple failed login attempts.",
+  "label": "technical"
+ },
+ {
+  "text": "The API rate limit seems way too low for our use case.",
+  "label": "technical"
+ },
+ {
+  "text": "Push notifications aren't working on Android devices.",
+  "label": "technical"
+ },
+ {
+  "text": "I found a bug where deleting one item deletes all items.",
+  "label": "technical"
+ },
+ {
+  "text": "The app crashes specifically when I try to print reports.",
+  "label": "technical"
+ },
+ {
+  "text": "Why is the loading spinner stuck indefinitely on my screen?",
+  "label": "technical"
+ },
+ {
+  "text": "Your latest patch broke our custom integration.",
+  "label": "technical"
+ },
+ {
+  "text": "I can't upload profile pictures larger than 1MB.",
+  "label": "technical"
+ },
+ {
+  "text": "The system keeps timing out during checkout process testing.",
+  "label": "technical"
+ },
+ {
+  "text": "Video calls drop constantly after five minutes.",
+  "label": "technical"
+ },
+ {
+  "text": "Can someone check the server logs for repeated 502 errors?",
+  "label": "technical"
+ },
+ {
+  "text": "The search bar autocomplete suggests completely wrong items.",
+  "label": "technical"
+ },
+ {
+  "text": "My widget embed code stopped rendering on our site.",
+  "label": "technical"
+ },
+ {
+  "text": "There's a memory issue causing the app to slow down over time.",
+  "label": "technical"
+ },
+ {
+  "text": "The SSO login redirects me to a blank error page.",
+  "label": "technical"
+ },
+ {
+  "text": "I can't seem to delete old backups from storage.",
+  "label": "technical"
+ },
+ {
+  "text": "Your API documentation examples don't actually work.",
+  "label": "technical"
+ },
+ {
+  "text": "The drag-and-drop editor is unresponsive on Safari.",
+  "label": "technical"
+ },
+ {
+  "text": "I keep receiving duplicate notification emails for one event.",
+  "label": "technical"
+ },
+ {
+  "text": "There's an encoding issue with exported PDF reports.",
+  "label": "technical"
+ },
+ {
+  "text": "The scheduled tasks aren't running at the configured times.",
+  "label": "technical"
+ },
+ {
+  "text": "My custom fields disappeared after the software update.",
+  "label": "technical"
+ },
+ {
+  "text": "Can you fix the broken image thumbnails in the gallery view?",
+  "label": "technical"
+ },
+ {
+  "text": "The login page keeps throwing CORS errors in the console.",
+  "label": "technical"
+ },
+ {
+  "text": "I'm unable to revoke API access for an old integration.",
+  "label": "technical"
+ },
+ {
+  "text": "Your webhook payload is missing required fields.",
+  "label": "technical"
+ },
+ {
+  "text": "The app won't recognize my fingerprint login anymore.",
+  "label": "technical"
+ },
+ {
+  "text": "There's a timezone bug causing all my events to shift.",
+  "label": "technical"
+ },
+ {
+  "text": "Hi, I'm interested in learning more about your enterprise plan.",
+  "label": "sales"
+ },
+ {
+  "text": "Can we schedule a demo for our team next week?",
+  "label": "sales"
+ },
+ {
+  "text": "What's the pricing difference between your pro and business tiers?",
+  "label": "sales"
+ },
+ {
+  "text": "Do you offer volume discounts for large teams?",
+  "label": "sales"
+ },
+ {
+  "text": "I'd like a custom quote for 200 users.",
+  "label": "sales"
+ },
+ {
+  "text": "Is there a free trial available before we commit?",
+  "label": "sales"
+ },
+ {
+  "text": "We're evaluating your product against a competitor, can you help?",
+  "label": "sales"
+ },
+ {
+  "text": "What features are included in the enterprise package?",
+  "label": "sales"
+ },
+ {
+  "text": "Can I speak with a sales representative about bulk licensing?",
+  "label": "sales"
+ },
+ {
+  "text": "Do you provide onboarding support for new customers?",
+  "label": "sales"
+ },
+ {
+  "text": "We're a growing startup interested in your product roadmap.",
+  "label": "sales"
+ },
+ {
+  "text": "What's the minimum contract length for annual plans?",
+  "label": "sales"
+ },
+ {
+  "text": "Can you send me a comparison sheet of all your plans?",
+  "label": "sales"
+ },
+ {
+  "text": "I'd like to upgrade my account to include more storage.",
+  "label": "sales"
+ },
+ {
+  "text": "Does your platform support SSO for enterprise customers?",
+  "label": "sales"
+ },
+ {
+  "text": "We need a proposal for a multi-department rollout.",
+  "label": "sales"
+ },
+ {
+  "text": "Are there any current promotions for new customers?",
+  "label": "sales"
+ },
+ {
+  "text": "What integrations come standard with the premium plan?",
+  "label": "sales"
+ },
+ {
+  "text": "Could you walk me through your product's key features?",
+  "label": "sales"
+ },
+ {
+  "text": "We're interested in a white-label version of your software.",
+  "label": "sales"
+ },
+ {
+  "text": "Is there a discount if we pay for two years upfront?",
+  "label": "sales"
+ },
+ {
+  "text": "Can you connect me with someone about reseller opportunities?",
+  "label": "sales"
+ },
+ {
+  "text": "I want to know if your product scales for 5000+ employees.",
+  "label": "sales"
+ },
+ {
+  "text": "What kind of customer support is included in each plan?",
+  "label": "sales"
+ },
+ {
+  "text": "We'd like a live walkthrough before making a decision.",
+  "label": "sales"
+ },
+ {
+  "text": "Do you have case studies from companies in our industry?",
+  "label": "sales"
+ },
+ {
+  "text": "What's included in the onboarding package for new clients?",
+  "label": "sales"
+ },
+ {
+  "text": "Can I get a trial extension to finish evaluating the product?",
+  "label": "sales"
+ },
+ {
+  "text": "Is there a student or educational discount available?",
+  "label": "sales"
+ },
+ {
+  "text": "We're comparing vendors and need your latest pricing sheet.",
+  "label": "sales"
+ },
+ {
+  "text": "How quickly can we get set up if we sign today?",
+  "label": "sales"
+ },
+ {
+  "text": "Do you offer flexible payment terms for annual contracts?",
+  "label": "sales"
+ },
+ {
+  "text": "I'd like to explore partnership opportunities with your company.",
+  "label": "sales"
+ },
+ {
+  "text": "Can we negotiate the price for a three-year commitment?",
+  "label": "sales"
+ },
+ {
+  "text": "What happens to our data if we switch plans later?",
+  "label": "sales"
+ },
+ {
+  "text": "Is phone support included with the standard package?",
+  "label": "sales"
+ },
+ {
+  "text": "We need an official quote for our procurement department.",
+  "label": "sales"
+ },
+ {
+  "text": "Can you tell me more about your API access tiers?",
+  "label": "sales"
+ },
+ {
+  "text": "Do you have a referral program for existing customers?",
+  "label": "sales"
+ },
+ {
+  "text": "I'm interested in migrating from a competitor, what's involved?",
+  "label": "sales"
+ },
+ {
+  "text": "Can someone from sales call me back this afternoon?",
+  "label": "sales"
+ },
+ {
+  "text": "What's your uptime guarantee for enterprise clients?",
+  "label": "sales"
+ },
+ {
+  "text": "We'd like to add five more licenses to our current plan.",
+  "label": "sales"
+ },
+ {
+  "text": "Is there a setup fee for the enterprise tier?",
+  "label": "sales"
+ },
+ {
+  "text": "Can you provide references from similar-sized companies?",
+  "label": "sales"
+ },
+ {
+  "text": "What's the process for switching from monthly to annual billing?",
+  "label": "sales"
+ },
+ {
+  "text": "I want more details on your data security certifications.",
+  "label": "sales"
+ },
+ {
+  "text": "Do you offer a money-back guarantee for new subscriptions?",
+  "label": "sales"
+ },
+ {
+  "text": "We're ready to sign, please send the contract.",
+  "label": "sales"
+ },
+ {
+  "text": "Can I get a personalized demo tailored to our workflow?",
+  "label": "sales"
+ },
+ {
+  "text": "What's the cost difference between monthly and yearly plans?",
+  "label": "sales"
+ },
+ {
+  "text": "Are there any hidden fees we should know about?",
+  "label": "sales"
+ },
+ {
+  "text": "We'd like to explore a pilot program before full rollout.",
+  "label": "sales"
+ },
+ {
+  "text": "Can your platform integrate with our existing CRM?",
+  "label": "sales"
+ },
+ {
+  "text": "I need pricing information for a nonprofit organization.",
+  "label": "sales"
+ },
+ {
+  "text": "Is dedicated account management available at higher tiers?",
+  "label": "sales"
+ },
+ {
+  "text": "We're interested in a multi-year enterprise agreement.",
+  "label": "sales"
+ },
+ {
+  "text": "What's your policy on data migration during onboarding?",
+  "label": "sales"
+ },
+ {
+  "text": "Can you clarify what counts as an active user for billing?",
+  "label": "sales"
+ },
+ {
+  "text": "We'd like a demo focused specifically on reporting features.",
+  "label": "sales"
+ },
+ {
+  "text": "Is there a limit to how many integrations we can add?",
+  "label": "sales"
+ },
+ {
+  "text": "Congratulations! You've won a free iPhone, click here to claim.",
+  "label": "spam"
+ },
+ {
+  "text": "Make $5000 a week working from home, no experience needed!",
+  "label": "spam"
+ },
+ {
+  "text": "URGENT: Your account will be suspended unless you verify now.",
+  "label": "spam"
+ },
+ {
+  "text": "Hot singles in your area want to chat with you tonight.",
+  "label": "spam"
+ },
+ {
+  "text": "Buy cheap watches and designer bags at 90% off today only.",
+  "label": "spam"
+ },
+ {
+  "text": "You have been selected for a special cash prize, respond immediately.",
+  "label": "spam"
+ },
+ {
+  "text": "Click this link to double your cryptocurrency overnight.",
+  "label": "spam"
+ },
+ {
+  "text": "Lose 20 pounds in a week with this one weird trick.",
+  "label": "spam"
+ },
+ {
+  "text": "Your package could not be delivered, click to reschedule.",
+  "label": "spam"
+ },
+ {
+  "text": "Nigerian prince needs your help transferring millions of dollars.",
+  "label": "spam"
+ },
+ {
+  "text": "Free vacation voucher waiting for you, claim before it expires.",
+  "label": "spam"
+ },
+ {
+  "text": "Get rich quick with this exclusive investment opportunity.",
+  "label": "spam"
+ },
+ {
+  "text": "Your computer has a virus, call this number immediately.",
+  "label": "spam"
+ },
+ {
+  "text": "Enlarge your reach with our guaranteed social media followers.",
+  "label": "spam"
+ },
+ {
+  "text": "Act now, limited time offer on male enhancement pills.",
+  "label": "spam"
+ },
+ {
+  "text": "You've been pre-approved for a loan with zero interest.",
+  "label": "spam"
+ },
+ {
+  "text": "Claim your free gift card by filling out this survey.",
+  "label": "spam"
+ },
+ {
+  "text": "This is not spam, please forward to ten friends for luck.",
+  "label": "spam"
+ },
+ {
+  "text": "Meet local singles now, no subscription required.",
+  "label": "spam"
+ },
+ {
+  "text": "Your email has won the international lottery, contact us now.",
+  "label": "spam"
+ },
+ {
+  "text": "Increase website traffic instantly with our magic SEO tool.",
+  "label": "spam"
+ },
+ {
+  "text": "Download this free ringtone before the offer disappears.",
+  "label": "spam"
+ },
+ {
+  "text": "We noticed suspicious activity, verify your bank details here.",
+  "label": "spam"
+ },
+ {
+  "text": "Cheap prescription medication available without a prescription.",
+  "label": "spam"
+ },
+ {
+  "text": "Congratulations, you're our website's millionth visitor!",
+  "label": "spam"
+ },
+ {
+  "text": "Work less, earn more with this secret passive income method.",
+  "label": "spam"
+ },
+ {
+  "text": "Your subscription to a service you never signed up for expired.",
+  "label": "spam"
+ },
+ {
+  "text": "Click here to see who viewed your profile today.",
+  "label": "spam"
+ },
+ {
+  "text": "Exclusive investment tip: this stock will 100x by Friday.",
+  "label": "spam"
+ },
+ {
+  "text": "You have unclaimed inheritance money waiting, contact our lawyer.",
+  "label": "spam"
+ },
+ {
+  "text": "Get verified on social media instantly, just pay a small fee.",
+  "label": "spam"
+ },
+ {
+  "text": "Your antivirus subscription has expired, renew now to stay protected.",
+  "label": "spam"
+ },
+ {
+  "text": "Earn crypto rewards just by clicking this link daily.",
+  "label": "spam"
+ },
+ {
+  "text": "Free trial of weight loss gummies, just pay shipping.",
+  "label": "spam"
+ },
+ {
+  "text": "This message is to inform you of a refund you're owed.",
+  "label": "spam"
+ },
+ {
+  "text": "Your iCloud storage is full, click here immediately to fix.",
+  "label": "spam"
+ },
+ {
+  "text": "Congratulations, you qualify for a government stimulus check.",
+  "label": "spam"
+ },
+ {
+  "text": "Hey I saw your profile and wanted to connect for business.",
+  "label": "spam"
+ },
+ {
+  "text": "Limited slots available for our miracle skincare product.",
+  "label": "spam"
+ },
+ {
+  "text": "You have a new voicemail, click to listen now.",
+  "label": "spam"
+ },
+ {
+  "text": "Your domain is expiring, renew now to avoid losing it forever.",
+  "label": "spam"
+ },
+ {
+  "text": "Earn a degree online in just two weeks, no exams required.",
+  "label": "spam"
+ },
+ {
+  "text": "This exclusive investment club only accepts 10 more members today.",
+  "label": "spam"
+ },
+ {
+  "text": "Your PayPal account has been limited, verify immediately.",
+  "label": "spam"
+ },
+ {
+  "text": "Get thousands of followers overnight with this bot service.",
+  "label": "spam"
+ },
+ {
+  "text": "You have 1 new message from an admirer, click to view.",
+  "label": "spam"
+ },
+ {
+  "text": "Your car warranty is about to expire, call now to renew.",
+  "label": "spam"
+ },
+ {
+  "text": "Double your money in 24 hours with this trading bot.",
+  "label": "spam"
+ },
+ {
+  "text": "Free crypto airdrop, just send us your wallet key to claim.",
+  "label": "spam"
+ },
+ {
+  "text": "Amazing weight loss secret doctors don't want you to know.",
+  "label": "spam"
+ },
+ {
+  "text": "Your Netflix payment failed, update your card details here.",
+  "label": "spam"
+ },
+ {
+  "text": "Win a brand new laptop just by answering this survey.",
+  "label": "spam"
+ },
+ {
+  "text": "This limited-time offer expires in 5 minutes, act fast!",
+  "label": "spam"
+ },
+ {
+  "text": "You've been chosen for an exclusive beta test, click to join.",
+  "label": "spam"
+ },
+ {
+  "text": "Refinance your mortgage today and save thousands instantly.",
+  "label": "spam"
+ },
+ {
+  "text": "Your social security number has been suspended, call now.",
+  "label": "spam"
+ },
+ {
+  "text": "Get paid to test products, no experience necessary, sign up now.",
+  "label": "spam"
+ },
+ {
+  "text": "This herbal supplement cures everything, order yours today.",
+  "label": "spam"
+ },
+ {
+  "text": "Your Amazon order requires urgent verification, click here.",
+  "label": "spam"
+ },
+ {
+  "text": "Unlock hidden secrets of the universe with this course.",
+  "label": "spam"
+ },
+ {
+  "text": "Buy followers, likes, and views cheaper than anyone else.",
+  "label": "spam"
+ },
+ {
+  "text": "I just wanted to say your product has really helped my team.",
+  "label": "other"
+ },
+ {
+  "text": "Do you have any job openings for software developers?",
+  "label": "other"
+ },
+ {
+  "text": "I'm writing an article and would like to interview your CEO.",
+  "label": "other"
+ },
+ {
+  "text": "Can you tell me more about your company's mission?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like to provide some feedback on the new interface design.",
+  "label": "other"
+ },
+ {
+  "text": "Are you hiring remote customer support agents?",
+  "label": "other"
+ },
+ {
+  "text": "I'm a student researching software companies for a class project.",
+  "label": "other"
+ },
+ {
+  "text": "Can I get permission to use your logo in a presentation?",
+  "label": "other"
+ },
+ {
+  "text": "I noticed a typo on your website's homepage.",
+  "label": "other"
+ },
+ {
+  "text": "Do you have any internship opportunities available this summer?",
+  "label": "other"
+ },
+ {
+  "text": "I'd love to feature your product in my newsletter.",
+  "label": "other"
+ },
+ {
+  "text": "What's your company's stance on data privacy regulations?",
+  "label": "other"
+ },
+ {
+  "text": "Can you share your press kit for an upcoming article?",
+  "label": "other"
+ },
+ {
+  "text": "I wanted to thank your support team for their patience yesterday.",
+  "label": "other"
+ },
+ {
+  "text": "Is your company attending any conferences this year?",
+  "label": "other"
+ },
+ {
+  "text": "I'm curious about your company's environmental sustainability efforts.",
+  "label": "other"
+ },
+ {
+  "text": "Could you provide accessibility information for visually impaired users?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like to nominate your company for a local business award.",
+  "label": "other"
+ },
+ {
+  "text": "Do you sponsor any open source projects?",
+  "label": "other"
+ },
+ {
+  "text": "I'm interested in speaking opportunities at your annual event.",
+  "label": "other"
+ },
+ {
+  "text": "Can you clarify your company's remote work policy?",
+  "label": "other"
+ },
+ {
+  "text": "I wanted to share some general suggestions for improving the app.",
+  "label": "other"
+ },
+ {
+  "text": "Where can I find your terms of service document?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like feedback on a blog post mentioning your company.",
+  "label": "other"
+ },
+ {
+  "text": "Do you have a community forum for users to connect?",
+  "label": "other"
+ },
+ {
+  "text": "I'm curious how your company got started.",
+  "label": "other"
+ },
+ {
+  "text": "Could you send me your official brand guidelines?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like to know more about your diversity and inclusion programs.",
+  "label": "other"
+ },
+ {
+  "text": "Are there volunteer opportunities connected to your company?",
+  "label": "other"
+ },
+ {
+  "text": "I'm a teacher and would love free licenses for my classroom.",
+  "label": "other"
+ },
+ {
+  "text": "Just wanted to say the new update looks great overall.",
+  "label": "other"
+ },
+ {
+  "text": "Can I subscribe to your company newsletter?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like more information about your data retention policy.",
+  "label": "other"
+ },
+ {
+  "text": "Do you have an affiliate program I could join?",
+  "label": "other"
+ },
+ {
+  "text": "How can I apply to be a beta tester for new features?",
+  "label": "other"
+ },
+ {
+  "text": "I'm curious if you're open to co-marketing opportunities.",
+  "label": "other"
+ },
+ {
+  "text": "Can you tell me who founded the company?",
+  "label": "other"
+ },
+ {
+  "text": "I wanted to report a broken link on your careers page.",
+  "label": "other"
+ },
+ {
+  "text": "Do you offer scholarships for coding bootcamp students?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like to discuss a potential research collaboration.",
+  "label": "other"
+ },
+ {
+  "text": "What's the best way to stay updated on new feature releases?",
+  "label": "other"
+ },
+ {
+  "text": "Can I get a signed copy of your company's annual report?",
+  "label": "other"
+ },
+ {
+  "text": "I'm interested in your company culture and values.",
+  "label": "other"
+ },
+ {
+  "text": "Do you support any local charities or community programs?",
+  "label": "other"
+ },
+ {
+  "text": "I wanted to give kudos to your design team for the rebrand.",
+  "label": "other"
+ },
+ {
+  "text": "Is there a public roadmap for upcoming features?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like to know if you offer bug bounty rewards.",
+  "label": "other"
+ },
+ {
+  "text": "Could you connect me with your investor relations team?",
+  "label": "other"
+ },
+ {
+  "text": "I'm curious about your policy on third-party audits.",
+  "label": "other"
+ },
+ {
+  "text": "Do you have a style guide for content creators writing about you?",
+  "label": "other"
+ },
+ {
+  "text": "I wanted to ask about your recent acquisition announcement.",
+  "label": "other"
+ },
+ {
+  "text": "Can you tell me about opportunities to speak at your webinar?",
+  "label": "other"
+ },
+ {
+  "text": "I'm interested in translating your app into another language.",
+  "label": "other"
+ },
+ {
+  "text": "What's your policy regarding user-generated content ownership?",
+  "label": "other"
+ },
+ {
+  "text": "I wanted to check if you sponsor hackathons or student events.",
+  "label": "other"
+ },
+ {
+  "text": "Could you point me to your accessibility compliance statement?",
+  "label": "other"
+ },
+ {
+  "text": "I'm curious about the history behind your company's name.",
+  "label": "other"
+ },
+ {
+  "text": "Do you have any open positions in your marketing department?",
+  "label": "other"
+ },
+ {
+  "text": "I'd like to explore a joint webinar with your product team.",
+  "label": "other"
+ },
+ {
+  "text": "Can you share more about your leadership team's backgrounds?",
+  "label": "other"
+ },
+ {
+  "text": "I just wanted to say thanks for such a helpful product overall.",
+  "label": "other"
+ }
+]

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev Town of Agents</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1200px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:18px; margin:0 0 12px; color:var(--accent2); }
+  form { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  input, select { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; }
+  input { flex:1; min-width:240px; }
+  button { background:var(--accent2); color:#0f172a; border:0; border-radius:8px; padding:8px 18px; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .grid { display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+  canvas { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:12px; font-size:13px; }
+  .card h2 { font-size:14px; margin:0 0 8px; }
+  .stats { display:flex; flex-wrap:wrap; gap:4px 16px; color:var(--muted); }
+  .stats b { color:var(--text); }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin:8px 0; font-size:12px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; }
+  .list { max-height:360px; overflow:auto; font-size:12px; line-height:1.6; }
+  .list .n { color:var(--text); font-weight:600; }
+  .err { color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev town of agents</h1>
+  <form id="f">
+    <input id="text" placeholder="Type an event. All 50 characters decide in one burst." value="A fire has started at the mill" required>
+    <label>at <select id="place"></select></label>
+    <button id="go">Broadcast</button>
+  </form>
+  <div class="grid">
+    <div><canvas id="map" width="880" height="560"></canvas></div>
+    <div>
+      <div class="card"><div class="stats" id="stats">Loading town…</div><div class="legend" id="legend"></div></div>
+      <div class="card"><h2>Decisions, most urgent first</h2><div class="list" id="list"></div></div>
+    </div>
+  </div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const COLOR = { ignore: "#64748b", investigate: "#2dd4bf", join: "#fb923c", flee: "#f87171", warn: "#facc15", pending: "#334155", error: "#7f1d1d" };
+  const cv = $("map"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  const px = (p) => ({ x: p.x / 100 * (W - 60) + 30, y: p.y / 100 * (H - 60) + 30 });
+  let town = null, sprites = [], state = null, last = "", eventStamp = null;
+  function initSprites() {
+    sprites = town.characters.map((c, i) => {
+      const p = px(town.places.find((q) => q.name === c.place) ?? { x: 50, y: 50 });
+      const a = i * 2.399, r = 14 + (i % 5) * 6; // deterministic scatter around the place
+      return { name: c.name, home: p, x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r, tx: null, ty: null, speed: 0, action: null, p: 0 };
+    });
+  }
+  function setTargets(s) {
+    const ev = s.event && town.places.find((q) => q.name === s.event.place);
+    const ep = ev ? px(ev) : null;
+    s.decisions.forEach((d, i) => {
+      const sp = sprites[i]; sp.action = d.error ? "error" : d.action; sp.p = d.p ?? 0;
+      if (!d.action || !ep) return;
+      const u = (d.urgency ?? 0) / 4;
+      sp.speed = 0.3 + u * 2.2;
+      const dx = sp.x - ep.x, dy = sp.y - ep.y, dist = Math.hypot(dx, dy) || 1;
+      if (d.action === "investigate") { sp.tx = ep.x + dx / dist * 55; sp.ty = ep.y + dy / dist * 55; }
+      else if (d.action === "join") { sp.tx = ep.x + dx / dist * 25; sp.ty = ep.y + dy / dist * 25; }
+      else if (d.action === "flee") { sp.tx = Math.min(W - 20, Math.max(20, sp.x + dx / dist * 160)); sp.ty = Math.min(H - 20, Math.max(20, sp.y + dy / dist * 160)); }
+      else if (d.action === "warn") { const o = sprites[(i + 7) % sprites.length]; sp.tx = o.x; sp.ty = o.y; }
+      else { sp.tx = sp.ty = null; }
+    });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (town) {
+      ctx.font = "12px system-ui"; ctx.textAlign = "center";
+      for (const p of town.places) { const q = px(p); ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(q.x, q.y, 22, 0, 7); ctx.fill(); ctx.fillStyle = "#94a3b8"; ctx.fillText(p.name, q.x, q.y + 36); }
+      if (state?.event) { const ev = town.places.find((q) => q.name === state.event.place); if (ev) { const q = px(ev); ctx.strokeStyle = "#fb923c"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(q.x, q.y, 26 + 4 * Math.sin(Date.now() / 200), 0, 7); ctx.stroke(); } }
+      for (const sp of sprites) {
+        if (sp.tx != null) { const dx = sp.tx - sp.x, dy = sp.ty - sp.y, d = Math.hypot(dx, dy); if (d > 1) { sp.x += dx / d * Math.min(sp.speed, d); sp.y += dy / d * Math.min(sp.speed, d); } }
+        ctx.fillStyle = COLOR[sp.action] ?? (state && !state.done ? COLOR.pending : "#94a3b8");
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, 7, 0, 7); ctx.fill();
+        if (sp.action && sp.action !== "error") { ctx.fillStyle = "#0f172a"; ctx.fillRect(sp.x - 10, sp.y + 9, 20, 3); ctx.fillStyle = COLOR[sp.action]; ctx.fillRect(sp.x - 10, sp.y + 9, 20 * sp.p, 3); }
+        ctx.fillStyle = "#e2e8f0"; ctx.font = "10px system-ui"; ctx.fillText(sp.name, sp.x, sp.y - 10);
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  async function poll() {
+    const s = await (await fetch("/state")).json();
+    if (!town) { town = s.town; initSprites(); $("place").innerHTML = town.places.map((p) => `<option${p.name === "mill" ? " selected" : ""}>${esc(p.name)}</option>`).join(""); }
+    const key = JSON.stringify([s.event, s.decisions, s.done]);
+    if (key !== last) { last = key; state = s; if (s.started !== eventStamp) { eventStamp = s.started; initSprites(); } setTargets(s); render(s); }
+    $("go").disabled = !s.done;
+    setTimeout(poll, 250);
+  }
+  function render(s) {
+    const done = s.decisions.filter((d) => d.action || d.error).length;
+    $("legend").innerHTML = Object.entries(COLOR).filter(([k]) => !["pending", "error"].includes(k)).map(([k, c]) => `<span><i style="background:${c}"></i>${k}${s.counts ? ` ${s.counts[k]}` : ""}</span>`).join("");
+    if (!s.event) { $("stats").innerHTML = `<span><b>${town.characters.length}</b> characters, <b>${town.places.length}</b> places. Type an event and broadcast it.</span>`; $("list").innerHTML = ""; return; }
+    $("stats").innerHTML = `<span style="flex-basis:100%">“${esc(s.event.text)}” at the ${esc(s.event.place)}</span>` +
+      (s.done ? `<span><b>${s.ok}/${s.n}</b> answered</span><span>burst <b>${s.burstMs} ms</b></span><span><b>${s.perSec}</b> decisions/s</span><span>median <b>${s.medianMs} ms</b>, max <b>${s.maxMs} ms</b></span><span><b>$${s.usd.toFixed(4)}</b></span>`
+              : `<span><b>${done}/${s.decisions.length}</b> answered, ${Date.now() - s.started} ms…</span>`);
+    $("list").innerHTML = [...s.decisions].filter((d) => d.action || d.error).sort((a, b) => (b.urgency ?? -1) - (a.urgency ?? -1))
+      .map((d) => `<div><span class="n">${esc(d.name)}</span> <span style="color:#94a3b8">${esc(d.role)}, ${esc(d.traits)}</span><br>` +
+        (d.error ? `<span class="err">${esc(d.error)}</span>` : `<span style="color:${COLOR[d.action]}">${d.action}</span> p ${d.p.toFixed(2)} · urgency ${d.urgency.toFixed(2)} · ${d.ms} ms`) + `</div>`).join("");
+  }
+  $("f").onsubmit = async (e) => {
+    e.preventDefault(); $("go").disabled = true;
+    const r = await (await fetch("/event", { method: "POST", body: JSON.stringify({ text: $("text").value, place: $("place").value }) })).json();
+    if (r.error) { $("stats").innerHTML = `<span class="err">${esc(r.error)}</span>`; $("go").disabled = false; }
+  };
+  poll(); draw();
+</script>
+</body>
+</html>
