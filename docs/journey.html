@@ -64,6 +64,21 @@
 </ul>
 <p>Two more were checked the same way at the advisor's request: the cost field is <code>providerMetadata.gateway.marketCost</code>, a string in dollars, and <code>chess.js</code> 1.x returns SAN from <code>moves()</code> and throws on an illegal <code>move()</code>. <span class="rule">Rule learned: pin the field path with one call before six pages depend on it.</span></p>
 
+<h2>3b. One real call per project</h2>
+<p>Captured on 2026-09-19 at about 11:20 local time for the input/output sections on each tab. The skill-router time includes one gateway 503 burst and a 5 s wait before the retry that succeeded.</p>
+<table>
+<tr><th>Tab</th><th>Example</th><th>Answer</th><th>Confidence</th><th>Time</th><th>Cost</th></tr>
+<tr><td>probe-burst</td><td>n = 3</td><td>even 0.01</td><td>none for booleans</td><td>319 ms</td><td>$0.0000116</td></tr>
+<tr><td>wiki</td><td>Coffee → Napoleon, first hop</td><td>Gabriel de Clieu</td><td>0.17</td><td>293 ms</td><td>$0.000109</td></tr>
+<tr><td>chess</td><td>start position, 20 moves</td><td>e4</td><td>0.69</td><td>309 ms</td><td>$0.0000204</td></tr>
+<tr><td>town</td><td>Mara the baker, free bread</td><td>join, urgency 1.11</td><td>0.59, 0.69</td><td>237 ms</td><td>$0.000023</td></tr>
+<tr><td>sort</td><td>items.json[0]</td><td>billing</td><td>1.00</td><td>235 ms</td><td>$0.0000193</td></tr>
+<tr><td>logs</td><td>"connection pool exhausted"</td><td>severity 2.02, page 0.81, db</td><td>0.96, 1.00</td><td>2,480 ms</td><td>$0.0000248</td></tr>
+<tr><td>lane</td><td>cone 3 lengths ahead, speed 2</td><td>ease_right, danger 2.6</td><td>0.47, 0.60</td><td>300 ms</td><td>$0.0000276</td></tr>
+<tr><td>skill-router</td><td>"wrap up my day", 147 skills</td><td>end-of-day-wrapup</td><td>1.00</td><td>12,435 ms</td><td>$0.000417</td></tr>
+<tr><td>verify</td><td>the synthetic diff</td><td>secret 0.99, test_weakened 0.99, debug_left 0.98</td><td>risk 1.00</td><td>336 ms</td><td>$0.0000345</td></tr>
+</table>
+
 <h2>4. Design decisions</h2>
 <table>
 <tr><th>Decision</th><th>Chosen</th><th>Rejected, and why</th></tr>

@@ -24,6 +24,22 @@ Every page puts the measured latency on screen. The videos show demos from machi
 | `hooks/skill-router.mjs` | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
 
+## One real call per project
+
+Captured on 2026-09-19 for the [development journey](https://az9713.github.io/jev-projects/journey.html), which shows the full request and response for each row. The skill-router time includes one gateway 503 burst and a 5 s retry wait.
+
+| Tab | Example | Answer | Confidence | Time | Cost |
+|---|---|---|---|---|---|
+| probe-burst | n = 3 | even 0.01 | none for booleans | 319 ms | $0.0000116 |
+| wiki | Coffee → Napoleon, first hop | Gabriel de Clieu | 0.17 | 293 ms | $0.000109 |
+| chess | start position, 20 moves | e4 | 0.69 | 309 ms | $0.0000204 |
+| town | Mara the baker, free bread | join, urgency 1.11 | 0.59, 0.69 | 237 ms | $0.000023 |
+| sort | items.json[0] | billing | 1.00 | 235 ms | $0.0000193 |
+| logs | "connection pool exhausted" | severity 2.02, page 0.81, db | 0.96, 1.00 | 2,480 ms | $0.0000248 |
+| lane | cone 3 lengths ahead, speed 2 | ease_right, danger 2.6 | 0.47, 0.60 | 300 ms | $0.0000276 |
+| skill-router | "wrap up my day", 147 skills | end-of-day-wrapup | 1.00 | 12,435 ms | $0.000417 |
+| verify | the synthetic diff | secret 0.99, test_weakened 0.99, debug_left 0.98 | risk 1.00 | 336 ms | $0.0000345 |
+
 ## Run
 
 Needs Node 20.6 or later and a Vercel AI Gateway key on the paid tier.
