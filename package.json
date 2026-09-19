@@ -1,0 +1,11 @@
+{
+  "name": "jev-projects",
+  "version": "1.0.0",
+  "description": "Small demos of Jev (TypeSafe) through the Vercel AI Gateway: wiki race, town of agents, bullet chess, and more",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "ai": "^7.0.107",
+    "chess.js": "^1.0.0"
+  }
+}
