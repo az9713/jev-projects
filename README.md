@@ -2,10 +2,11 @@
 
 Small demos of [Jev](https://docs.typesafe.ai/introduction), TypeSafe's decision model, reached through the [Vercel AI Gateway](https://vercel.com/ai-gateway) with one key. Each project is one Node file with the questions at the top, plus one HTML page that polls the server and draws the decisions. No framework, no build step.
 
-The projects come from three YouTube videos about Jev (Matthew Berman, Ray Amjad, Witsam) and an assessment of which of their 32 demos can be built here. Two earlier ones live in their own repos: the [model router](https://github.com/az9713/jev-model-router) and the [email triage](https://github.com/az9713/jev-email-triage).
+The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad, Witsam, and Nate Herk). Two earlier ones live in their own repos: the [model router](https://github.com/az9713/jev-model-router) and the [email triage](https://github.com/az9713/jev-email-triage).
 
 - **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
 - **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
+- **Windows feasibility:** https://az9713.github.io/jev-projects/windows-feasibility.html — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
 
 ## The one rule
 
@@ -97,6 +98,8 @@ node --env-file=.env probe-burst.mjs 50
 
 ## Not built, and why
 
-- Minecraft (needs Java), Doom (needs ViZDoom, Python), Melee (Dolphin), trading bot (no broker), Sentry pipeline: out by the stack decision (Node only) or missing accounts. See section 7 of the assessment.
+- Minecraft and Doom are now confirmed buildable: this machine has Node 22, Java 23, Python 3.13, WSL 2, 31.7 GiB RAM, and enough disk for either project. Melee is conditional on a legally obtained NTSC 1.02 game image and Slippi setup. A full CARLA driving replica is unsuitable here because the RTX 3050 Laptop GPU has 4 GiB VRAM; CARLA documents 6 GiB as a minimum and recommends 8 GiB. See the [Windows feasibility report](https://az9713.github.io/jev-projects/windows-feasibility.html).
+- Live versions of the X-feed classifier, YouTube/community routing, meetings, contracts, job/lead screening, brain-dump routing, customer support, and Sentry need the relevant account or private input stream. Their decision pipelines can all be built and evaluated locally with fixtures first.
+- Real-money trading is deliberately excluded. A replay or paper-trading experiment is feasible, but neither video establishes predictive value, and the decision model should be evaluated for calibration before any execution layer exists.
 - The wiki "race" lane against a chat model: not built. Chess against a chat model: wired (type a gateway model id in the page's opponent field, 10 s budget per move) but not measured.
 - The skill router's 30-prompt evaluation against real transcripts: not done; the six-prompt check stands in.

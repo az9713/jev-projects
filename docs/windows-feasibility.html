@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="A source-backed assessment of which unimplemented Jev video projects can run on this Windows laptop.">
+<title>Jev projects — Windows feasibility</title>
+<style>
+  :root{--bg:#0d1015;--panel:#171b23;--panel2:#1d2330;--line:#30394a;--text:#f5f7fb;--muted:#aeb7c7;--blue:#7dd3fc;--green:#86efac;--amber:#fcd34d;--red:#fca5a5;--radius:12px}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 85% 0,#17324b 0,transparent 32rem),var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--blue)}code{font:0.9em ui-monospace,Consolas,monospace;background:#0b0e13;border:1px solid var(--line);padding:.1rem .35rem;border-radius:5px}main{max-width:1100px;margin:auto;padding:28px 20px 80px}nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:52px;font-size:14px}nav a{text-decoration:none;color:var(--muted)}nav a:hover,nav a:focus{color:var(--text)}.eyebrow{color:var(--blue);font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.hero{max-width:900px;margin-bottom:38px}.hero h1{font-size:clamp(2.25rem,6vw,4.7rem);line-height:1.02;letter-spacing:-.045em;margin:10px 0 18px}.hero p{font-size:1.18rem;color:#d4dae5;max-width:820px}.stamp{display:inline-block;border:1px solid #315b71;background:#132a37;color:#c9f0ff;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700}.stats,.cards{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,1fr);margin:30px 0 76px}.stat,.card,.callout,.table-wrap{background:linear-gradient(145deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--radius)}.stat{padding:18px}.stat strong{display:block;font-size:1.65rem;line-height:1.15;color:var(--blue)}.stat span{color:var(--muted);font-size:13px}section{margin:76px 0}h2{font-size:clamp(1.6rem,3vw,2.2rem);margin:0 0 10px;letter-spacing:-.02em}h3{margin:0 0 7px}section>p{color:var(--muted);max-width:860px;margin:0 0 24px}.cards{grid-template-columns:repeat(2,1fr)}.card{padding:22px}.card p{margin:0;color:var(--muted)}.tag{display:inline-block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}.yes{color:var(--green)}.conditional{color:var(--amber)}.no{color:var(--red)}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:880px}th,td{text-align:left;padding:13px 15px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}tr:last-child td{border-bottom:0}.verdict{font-weight:800;white-space:nowrap}.callout{padding:22px;border-left:4px solid var(--amber)}.callout p{margin:0;color:#d4dae5}.rank{font-weight:800;color:var(--blue)}.sources li{margin:.5rem 0;color:var(--muted)}footer{color:var(--muted);border-top:1px solid var(--line);padding-top:24px;font-size:14px}@media(max-width:760px){.stats,.cards{grid-template-columns:1fr 1fr}}@media(max-width:480px){.stats,.cards{grid-template-columns:1fr}.hero h1{font-size:2.6rem}}
+</style>
+</head>
+<body>
+<main>
+  <nav aria-label="Report navigation"><a href="index.html">All projects</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="#machine">Machine</a><a href="#matrix">Feasibility</a><a href="#order">Build order</a><a href="#sources">Sources</a><a href="https://github.com/az9713/jev-projects">Repository</a></nav>
+  <header class="hero">
+    <div class="eyebrow">Four-video inventory · local machine audit</div>
+    <h1>Most missing Jev projects can run here. A few cannot run as shown.</h1>
+    <p>The earlier assessment assumed a Node-only environment and covered three videos. This audit includes Nate Herk's twelve examples and checks the actual Windows machine. Java, Python, WSL, FFmpeg, CMake, and Docker are present. Accounts, licensed game assets, model latency, and GPU memory are the remaining boundaries.</p>
+    <span class="stamp">Verified on this machine · 19 September 2026</span>
+  </header>
+
+  <div class="stats" aria-label="Assessment summary">
+    <div class="stat"><strong>4 videos</strong><span>Matthew Berman, Ray Amjad, Witsam, Nate Herk</span></div>
+    <div class="stat"><strong>31.7 GiB</strong><span>RAM with 12 logical CPU threads</span></div>
+    <div class="stat"><strong>4 GiB</strong><span>RTX 3050 Laptop GPU VRAM</span></div>
+    <div class="stat"><strong>156.8 GB</strong><span>free disk space on C:</span></div>
+  </div>
+
+  <section id="machine">
+    <h2>What is actually available</h2>
+    <p>Command-line checks distinguish an installed executable from a working service. Docker Desktop is installed but its Linux engine was stopped during the audit; WSL 2 and Ubuntu are configured but stopped. Both are start-up tasks, not architectural blockers.</p>
+    <div class="cards">
+      <article class="card"><span class="tag yes">Ready</span><h3>Application runtimes</h3><p>Windows 11 Home build 26200, Node 22.22, Python 3.13.5, Java 23.0.2, Git, FFmpeg, and CMake are available.</p></article>
+      <article class="card"><span class="tag yes">Ready</span><h3>Compute for text decisions</h3><p>Intel i5-12450H, 8 cores / 12 threads, 31.7 GiB RAM, and 156.8 GB free disk are ample for Jev calls, browser tests, local game servers, and replay processing.</p></article>
+      <article class="card"><span class="tag conditional">Start first</span><h3>Linux containers</h3><p>WSL 2 has Ubuntu and Docker Desktop distributions. Docker's client is installed; the daemon was not running. Start Docker Desktop before any self-hosted service.</p></article>
+      <article class="card"><span class="tag no">Below requirement</span><h3>Heavy driving simulation</h3><p>The RTX 3050 Laptop GPU reports 4 GiB VRAM. CARLA states a 6 GiB minimum and recommends an RTX 2070-class GPU with 8 GiB. This is the decisive local constraint.</p></article>
+    </div>
+  </section>
+
+  <section id="matrix">
+    <h2>Unimplemented or only partially represented projects</h2>
+    <p>“Yes” means a faithful local prototype can be built now. “Conditional” means the code is feasible but a private account, licensed asset, or live data source must be supplied. “Reduced” preserves the decision problem while lowering scale or visual fidelity. Projects already present in the three repositories are omitted except where the video version is materially broader.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Project from videos</th><th>Verdict</th><th>Why</th><th>Faithful local scope</th></tr></thead>
+      <tbody>
+        <tr><td>Minecraft: frontier planner + Jev actor</td><td class="verdict yes">Yes</td><td>Node and Java are installed; Mineflayer supports a local/offline server and browser viewer.</td><td>One local world, text state, bounded actions, browser view, recorded planner handoffs. No Minecraft purchase is required for a bot-only offline server.</td></tr>
+        <tr><td>Doom in real time</td><td class="verdict yes">Yes, slowed</td><td>ViZDoom publishes Windows x64 wheels for Python 3.9+; this machine has Python 3.13.</td><td>Game at normal render speed, Jev chooses high-level actions at 1–3 Hz, reflex controller holds inputs between decisions. It will not make 35 decisions per second.</td></tr>
+        <tr><td>Super Smash Bros. Melee</td><td class="verdict conditional">Conditional</td><td>Windows and the hardware are adequate. Slippi, current libmelee, and an NTSC-U/J 1.02 game image are required; none was found locally.</td><td>High-level tactics at a low cadence over frame state. Frame-perfect Jev control is incompatible with network model latency. A legally obtained game image is a hard prerequisite.</td></tr>
+        <tr><td>Tesla-style driving in CARLA</td><td class="verdict no">No, as shown</td><td>CARLA's documented minimum is 6 GiB VRAM; this GPU has 4 GiB. Source builds also need about 170 GB free, more than the current 156.8 GB.</td><td>Keep the existing lane simulator, or run CARLA on a larger GPU machine and send only compact state to Jev.</td></tr>
+        <tr><td>Flight-search browser agent</td><td class="verdict yes">Yes, bounded</td><td>Playwright supports Windows 11 and Node 22. Dynamic travel sites and bot defenses make a general agent unreliable.</td><td>One named site or a controlled travel fixture, visible browser, fixed search task, trace and screenshot evidence.</td></tr>
+        <tr><td>Hundreds of adversarial browser agents</td><td class="verdict conditional">Reduced</td><td>The software works locally, but one laptop is not a browser farm. Capacity must be measured rather than guessed.</td><td>Start with 5 concurrent contexts against the local applications; increase until CPU, RAM, or error-rate thresholds fail.</td></tr>
+        <tr><td>Sentry security pipeline</td><td class="verdict conditional">Conditional</td><td>A cloud Sentry project or a running self-hosted instance is needed for live events. Docker is installed but stopped.</td><td>Build against recorded Sentry-shaped events first, then connect a user-owned project. The current log monitor already proves the classifier core.</td></tr>
+        <tr><td>X-feed attention classifier extension</td><td class="verdict conditional">Conditional</td><td>A Manifest V3 extension and Jev backend are straightforward. Live validation needs an X login and DOM changes will require maintenance.</td><td>Label visible posts as breaking, useful, low-information, or other; cache by post ID; show confidence and latency.</td></tr>
+        <tr><td>YouTube-comment triage</td><td class="verdict conditional">Yes locally</td><td>The decision work is ordinary text classification. Live ingestion needs a YouTube API key or exported comments.</td><td>Evaluate reply-worthiness, sentiment, video-idea potential, and question difficulty over a labelled fixture before attaching an API.</td></tr>
+        <tr><td>Community / Skool routing</td><td class="verdict conditional">Yes locally</td><td>The classifier is buildable; live ingestion depends on community access and the platform interface.</td><td>Route anonymized sample posts for help, churn risk, staff attention, expertise, and testimonial strength.</td></tr>
+        <tr><td>Meeting-quality analyzer</td><td class="verdict yes">Yes</td><td>It consumes transcript text. FFmpeg is present if audio extraction is later needed.</td><td>Per-meeting predicates and scores first; use a frontier model only to synthesize trends over Jev's structured outputs.</td></tr>
+        <tr><td>Video-clip selection</td><td class="verdict yes">Yes</td><td>FFmpeg can extract candidates; Jev can cheaply rank transcript windows. A stronger model should propose semantic boundaries.</td><td>Candidate timestamps, stand-alone score, hook strength, screen-needed flag, quotable-line flag, and rendered preview sheet.</td></tr>
+        <tr><td>Contract screening</td><td class="verdict yes">Yes, triage only</td><td>Local text/PDF extraction and fixed questions are sufficient.</td><td>Flag clause presence and route risks for capable-model or lawyer review. Do not present the output as legal advice.</td></tr>
+        <tr><td>Job screening</td><td class="verdict yes">Yes</td><td>Works with exported listings; live scraping is unnecessary for proving the decision layer.</td><td>Minimum-requirements gate, role category, fit score, red flags, and held-out labelled cases.</td></tr>
+        <tr><td>Lead qualification</td><td class="verdict yes">Yes</td><td>The existing sort and email patterns already supply most of the machinery.</td><td>Qualified flag, quality score, red flags, and next-step route over synthetic or exported CRM rows.</td></tr>
+        <tr><td>Brain-dump router</td><td class="verdict yes">Yes</td><td>Text routing is immediate; voice can be added through local speech-to-text or browser recording.</td><td>Route transcribed notes into task, idea, journal, deadline, priority, and life-domain fields without writing to external apps initially.</td></tr>
+        <tr><td>Broader customer-support routing</td><td class="verdict yes">Yes</td><td>The email triage repository already proves the core path.</td><td>Add sentiment, urgency, refund, technical issue, escalation, and destination; validate against labelled held-out tickets.</td></tr>
+        <tr><td>Real-time Bitcoin trader</td><td class="verdict conditional">Paper replay only</td><td>Market data and a one-second decision loop are feasible. No source demonstrated calibrated predictive value, and no broker account is present.</td><td>Timestamped historical replay with transaction costs, no-lookahead rules, calibration, and a baseline. No real-money execution layer.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="order">
+    <h2>Recommended next build order</h2>
+    <p>The order maximizes new evidence about Jev instead of adding more variants of text classification already demonstrated by email triage, sort, logs, and routing.</p>
+    <div class="cards">
+      <article class="card"><span class="rank">1 · Doom</span><h3>Best stress test</h3><p>It forces a clean split between slow semantic decisions and fast reflex control. Measure survival, action latency, stale-decision rate, cost, and a rule-controller baseline.</p></article>
+      <article class="card"><span class="rank">2 · Minecraft</span><h3>Best hierarchical-agent test</h3><p>It tests Astra planning, Jev action selection, recovery from failed actions, long-horizon state, and a visually inspectable world.</p></article>
+      <article class="card"><span class="rank">3 · X attention filter</span><h3>Best product demonstration</h3><p>It makes low-latency classification visible in a real interface. Build and test first against saved post fixtures; attach to a live feed only after the classifier is credible.</p></article>
+      <article class="card"><span class="rank">4 · Brain-dump router</span><h3>Best personal utility</h3><p>It turns spoken or pasted thoughts into structured destinations. The first version needs only text input and a local JSON export.</p></article>
+    </div>
+    <aside class="callout"><h3>Decision</h3><p>Doom should be next. It is now buildable without changing hardware, it probes a capability the existing repositories do not test, and its failure modes can be measured against a deterministic controller. CARLA and real-money trading should not be started on this machine.</p></aside>
+  </section>
+
+  <section id="sources">
+    <h2>Evidence and source boundaries</h2>
+    <p>The project inventory comes from the four saved transcripts in <code>jev_collection</code>. Machine facts come from local commands. Software claims below link to primary documentation. Build estimates and the recommended order are engineering judgments.</p>
+    <ul class="sources">
+      <li><a href="https://github.com/PrismarineJS/mineflayer">Mineflayer</a>: Node 18+, offline authentication option, supported Minecraft versions, and game-state/action APIs.</li>
+      <li><a href="https://vizdoom.farama.org/introduction/python_quickstart/">ViZDoom Windows quick start</a>: Windows x64 wheels for Python 3.9+ and the limits of the Windows build.</li>
+      <li><a href="https://github.com/altf4/libmelee">libmelee</a> and <a href="https://github.com/project-slippi/slippi-launcher/blob/main/FAQ.md">Slippi FAQ</a>: Windows setup, game-state access, controller interface, and supported NTSC 1.02 image.</li>
+      <li><a href="https://carla.readthedocs.io/en/latest/start_quickstart/">CARLA quick start</a> and <a href="https://carla.readthedocs.io/en/latest/build_faq/">CARLA build FAQ</a>: Windows support, GPU memory, disk, and Python requirements.</li>
+      <li><a href="https://playwright.dev/docs/intro">Playwright installation</a>: Windows 11 and Node 22 support.</li>
+    </ul>
+  </section>
+
+  <footer>Repository assessment · no external account was opened, no licensed game asset was downloaded, and no broker connection was created.</footer>
+</main>
+</body>
+</html>
