@@ -47,11 +47,20 @@ async function write(name, frames, t0) {
   const src = await readFile(`${name}/${name}.html`, "utf8");
   const date = new Date(t0).toISOString().slice(0, 10);
   const banner = `<p style="margin:-4px 0 12px;font-size:13px;color:#94a3b8">Replay of a real run recorded on ${date}: Jev's answers, timings and cost as they happened, no server needed. ` +
-    `${frames.length} frames, ${(frames.at(-1).t / 1000).toFixed(0)} s. ${RUNS[name].start ? "The button restarts the replay; the inputs are ignored. " : ""}` +
+    `${frames.length} frames, ${(frames.at(-1).t / 1000).toFixed(0)} s. ${RUNS[name].start ? "The recorded inputs are shown below and locked; the button restarts the replay. " : ""}` +
     `<a href="https://github.com/az9713/jev-projects" style="color:#2dd4bf">Run it locally</a> for live Jev.</p>`;
   const shim = `<script>
   // Replay: /state returns the recorded frame for the elapsed time; a POST restarts the clock.
   const FRAMES = ${JSON.stringify(frames)}, REC0 = ${t0};
+  const RECORDED_INPUTS = ${JSON.stringify(RUNS[name].start?.[1] ?? {})};
+  for (const [id, value] of Object.entries(RECORDED_INPUTS)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.value = String(value); el.disabled = true;
+    if (el.tagName === "SELECT" && el.selectedOptions[0]) el.selectedOptions[0].textContent = el.selectedOptions[0].textContent.replace(/ —.*$/, "") + " — recorded";
+  }
+  const replayButton = document.querySelector("button");
+  if (replayButton) replayButton.textContent = "Replay";
   let start = performance.now(), shift = Date.now() - REC0;
   // ponytail: any number that looks like an epoch ms (town.started, logs.paged.at) is moved to replay time.
   const fix = (v) => typeof v === "number" ? (v > 1e12 ? v + shift : v) : Array.isArray(v) ? v.map(fix) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x)])) : v;
