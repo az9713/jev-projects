@@ -6,26 +6,25 @@ import { experimental_evaluate as evaluate } from "ai";
 export const JEV = "typesafe-ai/jev";
 
 // One Jev decision. Returns the answers, the confidence map, wall ms, and gateway market cost in dollars.
-export async function ask(state, questions) {
+export async function ask(state, questions, { evaluateFn = evaluate, maxRetries = 4, wait = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
   const t = performance.now();
-  let ev;
+  let ev, attempts = 0;
   for (let attempt = 0; ; attempt++) {
-    try { ev = await evaluate({ model: JEV, state, questions }); break; }
+    try { attempts++; ev = await evaluateFn({ model: JEV, state, questions }); break; }
     catch (e) {
-      // ponytail: ai 7.0.107 throws when Jev's choice is not the top probability after 2-decimal rounding (e.g. 0.13 chosen, 0.14 shown).
-      // Keep Jev's answer; the confidence and cost metadata are lost on this path.
-      if (e.name === "AI_InvalidResponseDataError" && e.data) return { answers: e.data, conf: {}, ms: Math.round(performance.now() - t), usd: 0, tokens: 0, note: "tie after rounding" };
       // The gateway answers 503 in short bursts; the SDK's own 3 retries span about 6 s. Wait longer, 4 more times, then give up.
-      if (e.name === "AI_RetryError" && attempt < 4) { await new Promise((r) => setTimeout(r, 3000 * 2 ** attempt)); continue; }
+      if (e.name === "AI_RetryError" && attempt < maxRetries) { await wait(3000 * 2 ** attempt); continue; }
       throw e;
     }
   }
+  for (const id of Object.keys(questions)) if (!ev.answers?.[id]) throw new Error(`Jev omitted answer ${id}`);
   return {
     answers: ev.answers,
     conf: ev.providerMetadata?.typesafe?.confidence ?? {},
     ms: Math.round(performance.now() - t),
     usd: Number(ev.providerMetadata?.gateway?.marketCost ?? 0),
     tokens: ev.usage?.inputTokens ?? 0,
+    attempts,
   };
 }
 
@@ -45,6 +44,6 @@ export async function serve(port, htmlUrl, routes) {
     try { res.end(JSON.stringify(await handler(body ? JSON.parse(body) : undefined))); }
     catch (e) { res.statusCode = 400; res.end(JSON.stringify({ error: String(e.message ?? e) })); }
   });
-  server.listen(port, () => console.log(`http://localhost:${port}`));
+  server.listen(port, "127.0.0.1", () => console.log(`http://localhost:${port}`));
   return server;
 }

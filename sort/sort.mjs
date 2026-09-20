@@ -35,7 +35,7 @@ const args = process.argv.slice(2);
 // ponytail: a worker pool, not batch-and-wait; a batch of 20 waits for its slowest call (5 to 7 s tail) and ran at 3.5 items/s
 export async function sortAll(items, onItem = () => {}) {
   const t0 = performance.now();
-  const s = { total: items.length, done: 0, ok: 0, correct: 0, labelled: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], misses: [], usd: 0, perSec: 0, ms: 0, running: true };
+  const s = { total: items.length, done: 0, ok: 0, failed: 0, correct: 0, labelled: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], misses: [], usd: 0, perSec: 0, ms: 0, running: true };
   let next = 0;
   const one = async (it) => {
     try {
@@ -44,7 +44,7 @@ export async function sortAll(items, onItem = () => {}) {
       s.ok++; s.counts[a.choice]++; s.usd += r.usd; s.conf[Math.min(9, Math.floor(p * 10))]++;
       if (it.label) { s.labelled++; s.correct += a.choice === it.label; if (a.choice !== it.label) s.misses.push({ text: it.text, bin: a.choice, p, label: it.label }); }
       s.recent.unshift({ text: it.text, bin: a.choice, p, label: it.label ?? null, ms: r.ms });
-    } catch (e) { s.recent.unshift({ text: it.text, bin: null, p: 0, error: String(e.message ?? e).slice(0, 80) }); }
+    } catch (e) { s.failed++; s.recent.unshift({ text: it.text, bin: null, p: 0, error: String(e.message ?? e).slice(0, 80) }); }
     s.done++;
     s.recent.length = Math.min(s.recent.length, 40);
     s.ms = Math.round(performance.now() - t0);
@@ -70,9 +70,11 @@ if (args.includes("--gen")) {
     const acc = s.correct / s.labelled;
     console.log(`${s.ok}/${s.total} sorted in ${(s.ms / 1000).toFixed(1)} s, ${s.perSec}/s, accuracy ${(acc * 100).toFixed(1)}% on ${s.labelled} labelled, $${s.usd.toFixed(4)}, bins ${JSON.stringify(s.counts)}`);
     for (const w of s.misses.slice(0, 8)) console.log(`  miss: "${w.text.slice(0, 70)}" → ${w.bin} (p ${w.p}), label ${w.label}`);
+    assert.equal(s.ok, s.total, `${s.failed}/${s.total} items failed`);
+    assert.equal(s.labelled, items.filter((i) => i.label).length, "some labelled items were not scored");
     assert.ok(acc > 0.9, `accuracy ${(acc * 100).toFixed(1)}% is not above 90%`);
   } else {
-    let state = { running: false, total: items.length, done: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], usd: 0, perSec: 0, ms: 0, bins: BINS };
+    let state = { running: false, total: items.length, done: 0, failed: 0, counts: Object.fromEntries(BINS.map((b) => [b, 0])), conf: Array(10).fill(0), recent: [], usd: 0, perSec: 0, ms: 0, bins: BINS };
     await serve(3004, new URL("./sort.html", import.meta.url), {
       "GET /state": () => state,
       "POST /start": async ({ n }) => {

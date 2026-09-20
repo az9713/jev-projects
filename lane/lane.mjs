@@ -50,23 +50,29 @@ function rules(w) { // the comparison driver: same information, fixed rules
 // One run over a schedule. driver(world) → { action, probs?, danger?, ms }. onTick(state) after every tick. tickMs 0 = no waiting.
 export async function run(schedule, driver, tickMs = 0, onTick = () => {}) {
   const w = { lane: 1, speed: 1, distance: 0, obstacles: [] };
-  const s = { tick: 0, ticks: schedule.length, collisions: 0, late: 0, world: view(w), last: null, probs: null, danger: null, ms: [], usd: 0, done: false };
-  let lastAction = "forward";
+  const s = { tick: 0, ticks: schedule.length, collisions: 0, late: 0, errors: 0, world: view(w), last: null, probs: null, danger: null, ms: [], usd: 0, done: false };
+  let lastAction = "forward", pending = null, pendingLate = false;
   for (let t = 0; t < schedule.length; t++) {
     if (schedule[t]) w.obstacles.push({ ...schedule[t] });
     s.world = view(w);
     const t0 = performance.now();
-    const decision = driver(w);
-    const d = tickMs ? await Promise.race([decision, new Promise((r) => setTimeout(() => r(null), tickMs))]) : await decision;
-    if (!d) { s.late++; decision.catch(() => {}); }
-    else { lastAction = d.action; s.probs = d.probs ?? null; s.danger = d.danger ?? null; s.ms.push(d.ms); s.usd += d.usd ?? 0; }
-    s.last = { action: lastAction, late: !d, ms: Math.round(performance.now() - t0) };
+    if (!pending) { pendingLate = false; pending = Promise.resolve().then(() => driver(w)).then((d) => ({ d }), (error) => ({ error })); }
+    const settled = tickMs ? await Promise.race([pending, new Promise((r) => setTimeout(() => r(null), tickMs))]) : await pending;
+    const repeated = !settled || pendingLate;
+    if (!settled) { s.late++; pendingLate = true; }
+    else {
+      pending = null;
+      if (settled.error) s.errors++;
+      else { const d = settled.d; if (!pendingLate) { lastAction = d.action; s.probs = d.probs ?? null; s.danger = d.danger ?? null; } s.ms.push(d.ms); s.usd += d.usd ?? 0; }
+    }
+    s.last = { action: lastAction, late: repeated, ms: Math.round(performance.now() - t0) };
     if (step(w, lastAction)) s.collisions++;
     s.tick = t + 1;
     s.world = view(w);
     onTick(s);
     if (tickMs) await new Promise((r) => setTimeout(r, Math.max(0, tickMs - (performance.now() - t0))));
   }
+  if (pending) { const settled = await pending; if (settled.error) s.errors++; else { s.ms.push(settled.d.ms); s.usd += settled.d.usd ?? 0; } }
   s.done = true; onTick(s);
   return s;
 }
