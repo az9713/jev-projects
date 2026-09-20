@@ -5,7 +5,16 @@ import { ask } from "../lib.mjs";
 for await (const line of readline.createInterface({ input: process.stdin })) {
   try {
     const state = JSON.parse(line);
-    const result = await ask(state, { action: {
+    const observation = {
+      scenario: state.scenario,
+      health: state.health,
+      ammunition: state.ammo,
+      kills: state.kills,
+      visible_monsters: state.visible_monsters,
+      tactics: state.tactics,
+      short_term_memory: state.short_term_memory,
+    };
+    const result = await ask(observation, { action: {
       type: "choice",
       instructions: state.instructions,
       criteria: state.action_descriptions,

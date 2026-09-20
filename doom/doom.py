@@ -30,9 +30,23 @@ SCENARIOS = {
     "defend": {
         "title": "Defend the center", "config": "defend_the_center.cfg", "repeat": 4, "timeout": 420,
         "goal": "Survive attacks from every direction, conserve ammunition, and kill as many monsters as possible.",
-        "instructions": "You stand in the center while monsters approach from all directions. Turn toward a visible monster and shoot when centered. Conserve limited ammunition.",
+        "instructions": "Survive. Shoot when the primary threat is fire-ready. Otherwise turn toward it. Keep scanning in the remembered direction when no monster is visible. Do not reverse direction unless the target crosses the crosshair. Conserve ammunition.",
         "actions": {"turn_left": [1, 0, 0], "turn_right": [0, 1, 0], "shoot": [0, 0, 1]},
         "descriptions": {"turn_left": "Rotate left toward a monster on the left, or search left", "turn_right": "Rotate right toward a monster on the right, or search right", "shoot": "Fire at a monster centered in the crosshair"},
+    },
+    "defend_stress": {
+        "title": "Defend under pressure", "config": "defend_the_center.cfg", "repeat": 6, "timeout": 630, "max_targets": 3,
+        "goal": "Survive 50% longer with partial observation and combined movement-fire actions.",
+        "instructions": "Survive the longer partial-observation fight. Shoot when fire-ready. Turn toward the primary threat; use turn-and-shoot only for a close threat near the crosshair. Keep the remembered scan direction when no target is visible.",
+        "actions": {
+            "turn_left": [1, 0, 0], "turn_right": [0, 1, 0], "shoot": [0, 0, 1],
+            "turn_left_shoot": [1, 0, 1], "turn_right_shoot": [0, 1, 1],
+        },
+        "descriptions": {
+            "turn_left": "Rotate left without spending ammunition", "turn_right": "Rotate right without spending ammunition",
+            "shoot": "Fire at a monster centered in the crosshair", "turn_left_shoot": "Rotate left while firing at a close target near center",
+            "turn_right_shoot": "Rotate right while firing at a close target near center",
+        },
     },
     "corridor": {
         "title": "Deadly corridor", "config": "deadly_corridor.cfg", "repeat": 8, "timeout": 700,
@@ -102,9 +116,10 @@ def game_view(game: vzd.DoomGame, scenario: str) -> dict:
             continue
         center = round(label.x + label.width / 2)
         targets.append({
-            "name": label.object_name, "category": label.object_category,
+            "id": label.object_id, "name": label.object_name, "category": label.object_category,
             "screen_x": center, "screen_y": round(label.y + label.height / 2),
             "width": label.width, "height": label.height, "side": side(center),
+            "crosshair_error": center - 160,
         })
     targets.sort(key=lambda target: (target["category"] != "Monster", -(target["width"] * target["height"])))
     px, py = (float(game.get_game_variable(v)) for v in (vzd.GameVariable.POSITION_X, vzd.GameVariable.POSITION_Y))
@@ -117,7 +132,7 @@ def game_view(game: vzd.DoomGame, scenario: str) -> dict:
         "kills": value(game, vzd.GameVariable.KILLCOUNT), "items": value(game, vzd.GameVariable.ITEMCOUNT),
         "damage_taken": value(game, vzd.GameVariable.DAMAGE_TAKEN),
         "position": {"x": round(px), "y": round(py), "heading_degrees": value(game, vzd.GameVariable.ANGLE)},
-        "goal_distance": goal_distance, "visible_targets": targets[:8],
+        "goal_distance": goal_distance, "visible_targets": targets[:spec.get("max_targets", 8)],
         "visible_monsters": sum(target["category"] == "Monster" for target in targets),
         "instructions": spec["instructions"], "action_descriptions": spec["descriptions"],
         "possible_actions": list(spec["actions"]),
@@ -128,14 +143,61 @@ def primary(view: dict, category: str) -> dict | None:
     return next((target for target in view["visible_targets"] if target["category"] == category), None)
 
 
+def tactical_view(view: dict, previous: dict | None, memory: dict) -> dict:
+    monster = primary(view, "Monster")
+    if monster:
+        height = monster["height"]
+        threat = "immediate" if height >= 80 else "close" if height >= 40 else "distant"
+        target = {
+            "id": monster["id"], "name": monster["name"], "side": monster["side"],
+            "crosshair_error": monster["crosshair_error"], "range": threat,
+            "fire_ready": abs(monster["crosshair_error"]) <= 15,
+        }
+    else:
+        target = None
+    view["tactics"] = {
+        "primary_threat": target,
+        "health_lost_last_step": max(0, previous["health"] - view["health"]) if previous else 0,
+        "ammo_used_last_step": max(0, previous["ammo"] - view["ammo"]) if previous else 0,
+        "kills_last_step": max(0, view["kills"] - previous["kills"]) if previous else 0,
+        "danger": "critical" if view["health"] < 25 else "high" if view["health"] < 60 or (previous and previous["health"] - view["health"] >= 20) else "normal",
+    }
+    view["short_term_memory"] = memory.copy()
+    return view
+
+
+def remember(memory: dict, view: dict, action: str):
+    monster = primary(view, "Monster")
+    memory["same_action_count"] = memory["same_action_count"] + 1 if action == memory["previous_action"] else 1
+    memory["previous_action"] = action
+    if monster:
+        memory["last_target_side"] = monster["side"]
+        memory["no_target_steps"] = 0
+        if monster["side"] in {"left", "right"}:
+            memory["scan_direction"] = f"turn_{monster['side']}"
+    else:
+        memory["no_target_steps"] += 1
+
+
+def action_repeat(view: dict, action: str) -> int:
+    spec = SCENARIOS[view["scenario"]]
+    if view["scenario"] == "defend":
+        threat = view["tactics"]["primary_threat"]
+        if action == "shoot" or not threat or abs(threat["crosshair_error"]) > 60:
+            return 8
+    return spec["repeat"]
+
+
 def rule_action(view: dict) -> str:
     scenario = view["scenario"]
     monster = primary(view, "Monster")
     if scenario == "basic":
         return "left" if monster and monster["side"] == "left" else "right" if monster and monster["side"] == "right" else "shoot"
-    if scenario == "defend":
+    if scenario.startswith("defend"):
         if not monster:
-            return "turn_right"
+            return view.get("short_term_memory", {}).get("scan_direction", "turn_right")
+        if scenario == "defend_stress" and monster["side"] != "centered" and abs(monster["crosshair_error"]) <= 50 and monster["height"] >= 40:
+            return f"turn_{monster['side']}_shoot"
         return "turn_left" if monster["side"] == "left" else "turn_right" if monster["side"] == "right" else "shoot"
     if monster:
         if monster["side"] == "left":
@@ -175,7 +237,7 @@ class JevWorker:
 def episode_success(scenario: str, final: dict) -> bool:
     if scenario == "basic":
         return final["kills"] > 0
-    if scenario == "defend":
+    if scenario.startswith("defend"):
         return final["health"] > 0 and final["kills"] > 0
     return final["items"] > 0 or final["position"]["x"] >= 1200
 
@@ -187,7 +249,7 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
     result = {
         "scenario": scenario, "scenario_title": spec["title"], "controller": controller,
         "episodes": episodes, "episode": 0, "successes": 0, "failures": 0, "kills": 0,
-        "decisions": 0, "errors": 0, "usd": 0.0, "ms": [], "last": None,
+        "decisions": 0, "errors": 0, "fallbacks": 0, "usd": 0.0, "ms": [], "last": None,
         "view": None, "history": [],
     }
     try:
@@ -195,9 +257,12 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
             game.set_seed(seed + episode)
             game.new_episode()
             rng = random.Random(seed + episode)
-            episode_decisions = episode_errors = 0
+            episode_decisions = episode_errors = episode_fallbacks = 0
+            episode_cost, episode_ms_start = result["usd"], len(result["ms"])
+            previous = None
+            memory = {"previous_action": None, "same_action_count": 0, "last_target_side": None, "no_target_steps": 0, "scan_direction": "turn_right"}
             while not game.is_episode_finished():
-                current = game_view(game, scenario)
+                current = tactical_view(game_view(game, scenario), previous, memory)
                 started = perf_counter()
                 probabilities = None
                 fallback = False
@@ -214,9 +279,13 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
                     action, fallback = rule_action(current), True
                     elapsed, usd, attempts = round((perf_counter() - started) * 1000), 0, 0
                     episode_errors += 1
+                    episode_fallbacks += 1
                     result["errors"] += 1
+                    result["fallbacks"] += 1
                     result["last_error"] = str(error)
-                game.make_action(spec["actions"][action], spec["repeat"])
+                game.make_action(spec["actions"][action], action_repeat(current, action))
+                remember(memory, current, action)
+                previous = current
                 episode_decisions += 1
                 result["decisions"] += 1
                 result["usd"] += usd
@@ -227,16 +296,20 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
                 result["last"] = {"action": action, "probabilities": probabilities, "ms": elapsed, "usd": usd, "attempts": attempts, "fallback": fallback}
                 if notify:
                     notify(result)
-            final = game_view(game, scenario)
+            final = tactical_view(game_view(game, scenario), previous, memory)
             success = episode_success(scenario, final)
             result["successes"] += int(success)
             result["failures"] += int(not success)
             result["kills"] += final["kills"]
             result["view"] = final
+            episode_ms = result["ms"][episode_ms_start:]
             result["history"].append({
                 "episode": episode + 1, "seed": seed + episode, "success": success,
                 "kills": final["kills"], "health": final["health"], "items": final["items"],
                 "decisions": episode_decisions, "reward": round(game.get_total_reward(), 1), "errors": episode_errors,
+                "fallbacks": episode_fallbacks, "usd": round(result["usd"] - episode_cost, 9),
+                "mean_ms": round(sum(episode_ms) / len(episode_ms)) if episode_ms else 0,
+                "p95_ms": sorted(episode_ms)[max(0, math.ceil(len(episode_ms) * .95) - 1)] if episode_ms else 0,
             })
             if notify:
                 notify(result)
@@ -249,7 +322,7 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
 def run_session(scenario: str, controller: str, episodes: int, seed: int, visible: bool):
     publish(running=True, message="Starting ViZDoom…", scenario=scenario, controller=controller,
             episode=0, episodes=episodes, successes=0, failures=0, kills=0, decisions=0,
-            errors=0, usd=0, ms=[], last=None, view=None, history=[])
+            errors=0, fallbacks=0, usd=0, ms=[], last=None, view=None, history=[])
     try:
         result = play(scenario, controller, episodes, seed, visible, lambda current: publish(**current, running=True, message="Running"))
         publish(**result, running=False, message="Complete")
@@ -303,12 +376,14 @@ def check():
     assert basic_rules["successes"] == 10, basic_rules
     assert basic_rules["successes"] > basic_random["successes"], (basic_rules, basic_random)
     defend_rules = play("defend", "rules", 10, 42, False)
+    stress_rules = play("defend_stress", "rules", 1, 43, False)
     corridor_rules = play("corridor", "rules", 1, 42, False)
     assert defend_rules["successes"] >= 8 and defend_rules["kills"] > 0, defend_rules
+    assert stress_rules["decisions"] > 0 and stress_rules["errors"] == 0, stress_rules
     assert corridor_rules["decisions"] > 0 and corridor_rules["errors"] == 0, corridor_rules
     print(f"doom check passed: basic rules {basic_rules['successes']}/10 vs random {basic_random['successes']}/10; "
           f"defend {defend_rules['successes']}/10 survived with {defend_rules['kills']} kills; "
-          f"corridor {corridor_rules['kills']} kills, success {corridor_rules['successes']}/1")
+          f"pressure {stress_rules['kills']} kills; corridor {corridor_rules['kills']} kills, success {corridor_rules['successes']}/1")
 
 
 if __name__ == "__main__":
@@ -324,7 +399,7 @@ if __name__ == "__main__":
         check()
     elif args.run:
         result = play(args.scenario, args.run, args.episodes, args.seed, not args.headless)
-        print(json.dumps({key: result[key] for key in ("scenario", "controller", "episodes", "successes", "failures", "kills", "decisions", "errors", "usd", "ms", "history")}, indent=2))
+        print(json.dumps({key: result[key] for key in ("scenario", "controller", "episodes", "successes", "failures", "kills", "decisions", "errors", "fallbacks", "usd", "ms", "history")}, indent=2))
     else:
         server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
         print(f"http://localhost:{PORT}")
