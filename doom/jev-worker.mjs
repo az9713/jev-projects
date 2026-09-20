@@ -2,21 +2,14 @@
 import readline from "node:readline";
 import { ask } from "../lib.mjs";
 
-const QUESTIONS = {
-  action: {
-    type: "choice",
-    instructions: "You control a player in a simple Doom arena. There is one stationary monster. If it is left of the crosshair, move left; if right, move right; if centered, shoot. Choose the next action.",
-    criteria: {
-      left: "Move left to align the monster with the center of the screen",
-      right: "Move right to align the monster with the center of the screen",
-      shoot: "Fire when the monster is centered",
-    },
-  },
-};
-
 for await (const line of readline.createInterface({ input: process.stdin })) {
   try {
-    const result = await ask(JSON.parse(line), QUESTIONS);
+    const state = JSON.parse(line);
+    const result = await ask(state, { action: {
+      type: "choice",
+      instructions: state.instructions,
+      criteria: state.action_descriptions,
+    } });
     process.stdout.write(JSON.stringify({
       action: result.answers.action.choice,
       probabilities: result.answers.action.probabilities,
