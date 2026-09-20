@@ -13,6 +13,7 @@ const RUNS = {
   sort:  { port: 3004, every: 250, start: ["/start", { n: 1000 }], done: (s) => !s.running },
   logs:  { port: 3005, every: 500, start: null, seconds: 40 }, // no start route: the server generates lines from launch
   lane:  { port: 3006, every: 200, start: ["/start", { driver: "jev", seed: 42 }], done: (s) => s.done },
+  doom:  { port: 3007, every: 250, start: ["/start", { controller: "jev", episodes: 3, seed: 42 }], done: (s) => !s.running && s.message === "Complete" },
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const getState = async (base) => (await fetch(base + "/state")).json();
@@ -22,7 +23,10 @@ async function record(name) {
   let child = null;
   try { await getState(base); console.log(`${name}: reusing the server on ${r.port}`); }
   catch {
-    child = spawn(process.execPath, ["--env-file=.env", `${name}/${name}.mjs`], { stdio: "inherit" });
+    const command = name === "doom"
+      ? [process.platform === "win32" ? "doom/.venv/Scripts/python.exe" : "doom/.venv/bin/python", "doom/doom.py"]
+      : [process.execPath, "--env-file=.env", `${name}/${name}.mjs`];
+    child = spawn(command[0], command.slice(1), { stdio: "inherit" });
     for (let i = 0; ; i++) { try { await getState(base); break; } catch { if (i > 100) throw new Error(`${name}: no server on ${r.port}`); await sleep(200); } }
   }
   try {

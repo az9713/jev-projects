@@ -23,8 +23,16 @@ Every page puts the measured latency on screen. The videos show demos from machi
 | `sort/` | [sort at scale](https://az9713.github.io/jev-projects/sort/sort.html) | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
 | `logs/` | [log monitor](https://az9713.github.io/jev-projects/logs/logs.html) | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
 | `lane/` | [lane sim](https://az9713.github.io/jev-projects/lane/lane.html) | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
+| `doom/` | [ViZDoom arena](https://az9713.github.io/jev-projects/doom/doom.html) | 3007 | Move left, move right, or shoot in ViZDoom's basic arena | Rules 10/10, random 7/10; Jev 3/3 twice, 14 decisions, 0 errors, $0.00027 per run |
 | `hooks/skill-router.mjs` | – | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
+
+### Folder rule
+
+- Each implemented application gets one top-level folder such as `doom/` or `minecraft/`; future projects do not get empty scaffolding.
+- A visual application's publishable replay mirrors that folder under `docs/<name>/`.
+- Shared Jev calls, retries, timing, and cost stay in `lib.mjs`. A project adds a language bridge only when its runtime requires one.
+- Local runtimes such as `doom/.venv/` and credentials remain ignored; source, pinned dependencies, checks, and measured replays are committed.
 
 ### Videos
 
@@ -69,6 +77,10 @@ echo AI_GATEWAY_API_KEY=your_key > .env
 node --env-file=.env wiki/wiki.mjs          # http://localhost:3001, same shape for town, chess, sort, logs, lane
 node --env-file=.env chess/chess.mjs --check   # every project has a --check that asserts its proof condition
 node --env-file=.env probe-burst.mjs 50
+py -3.13 -m venv doom/.venv
+doom/.venv/Scripts/python -m pip install -r doom/requirements.txt
+doom/.venv/Scripts/python doom/doom.py --check  # free ViZDoom rules-vs-random check
+doom/.venv/Scripts/python doom/doom.py          # http://localhost:3007
 ```
 
 `town/town.json` and `sort/items.json` were written once by `anthropic/claude-sonnet-5` (`--gen`) and are committed, so runs are reproducible.
@@ -98,7 +110,7 @@ node --env-file=.env probe-burst.mjs 50
 
 ## Not built, and why
 
-- Minecraft and Doom are now confirmed buildable: this machine has Node 22, Java 23, Python 3.13, WSL 2, 31.7 GiB RAM, and enough disk for either project. Melee is conditional on a legally obtained NTSC 1.02 game image and Slippi setup. A full CARLA driving replica is unsuitable here because the RTX 3050 Laptop GPU has 4 GiB VRAM; CARLA documents 6 GiB as a minimum and recommends 8 GiB. See the [Windows feasibility report](https://az9713.github.io/jev-projects/windows-feasibility.html).
+- Doom is now implemented with ViZDoom and its bundled Freedoom assets. Minecraft is confirmed buildable: this machine has Node 22, Java 23, Python 3.13, WSL 2, 31.7 GiB RAM, and enough disk. Melee is conditional on a legally obtained NTSC 1.02 game image and Slippi setup. A full CARLA driving replica is unsuitable here because the RTX 3050 Laptop GPU has 4 GiB VRAM; CARLA documents 6 GiB as a minimum and recommends 8 GiB. See the [Windows feasibility report](https://az9713.github.io/jev-projects/windows-feasibility.html).
 - Live versions of the X-feed classifier, YouTube/community routing, meetings, contracts, job/lead screening, brain-dump routing, customer support, and Sentry need the relevant account or private input stream. Their decision pipelines can all be built and evaluated locally with fixtures first.
 - Real-money trading is deliberately excluded. A replay or paper-trading experiment is feasible, but neither video establishes predictive value, and the decision model should be evaluated for calibration before any execution layer exists.
 - The wiki "race" lane against a chat model: not built. Chess against a chat model: wired (type a gateway model id in the page's opponent field, 10 s budget per move) but not measured.

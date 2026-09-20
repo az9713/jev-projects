@@ -1,5 +1,8 @@
 .env
 node_modules/
+doom/.venv/
+doom/__pycache__/
+_vizdoom.ini
 HANDOFF.md
 .ignore/
 /jev_*.mp4

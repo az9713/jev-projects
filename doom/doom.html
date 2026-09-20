@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev plays ViZDoom</title>
+<style>
+  :root{--bg:#11130f;--card:#1c2119;--line:#394234;--text:#f1f5e9;--muted:#a8b29f;--green:#a3e635;--orange:#fb923c;--red:#f87171}
+  *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#29351d,transparent 35rem),var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:24px 16px 60px}h1{font-size:22px;margin:0 0 5px;color:var(--green)}.intro{color:var(--muted);margin:0 0 18px}form{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin-bottom:16px}label{display:grid;gap:3px;color:var(--muted);font-size:12px}select,input,button{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit}button{background:var(--green);color:#17200c;border:0;font-weight:800;cursor:pointer;padding-inline:20px}button:disabled{opacity:.5;cursor:wait}.grid{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}.card{background:linear-gradient(145deg,#20261c,var(--card));border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px}.arena{width:100%;height:auto;background:#0c0e0b;border-radius:8px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#12160f;border-radius:7px;padding:9px}.stat strong{display:block;font-size:19px;color:var(--green)}.stat span{color:var(--muted);font-size:11px}.bars{display:grid;grid-template-columns:55px 1fr 38px;gap:5px 8px;align-items:center}.bar{height:12px;background:#10130e;border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--orange)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:6px}th{color:var(--muted)}.error{color:var(--red)}@media(max-width:760px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev plays ViZDoom</h1>
+  <p class="intro">One free Freedoom arena. The controller moves left, moves right, or shoots. ViZDoom opens the live game in a separate window.</p>
+  <form id="form">
+    <label>Controller<select id="controller"><option value="rules">rules — free baseline</option><option value="random">random — free baseline</option><option value="jev">Jev — uses gateway credit</option></select></label>
+    <label>Episodes<input id="episodes" type="number" min="1" max="10" value="5"></label>
+    <label>First seed<input id="seed" type="number" value="42"></label>
+    <button id="start">Start</button>
+    <span id="message"></span>
+  </form>
+  <div class="grid">
+    <section class="card"><canvas class="arena" id="arena" width="640" height="480"></canvas></section>
+    <section>
+      <div class="card stats">
+        <div class="stat"><strong id="progress">0/0</strong><span>episode</span></div><div class="stat"><strong id="wins">0</strong><span>wins</span></div><div class="stat"><strong id="timeouts">0</strong><span>timeouts</span></div>
+        <div class="stat"><strong id="decisions">0</strong><span>decisions</span></div><div class="stat"><strong id="latency">0 ms</strong><span>mean Jev latency</span></div><div class="stat"><strong id="cost">$0.0000</strong><span>gateway cost</span></div>
+      </div>
+      <div class="card"><b id="action">No decision yet</b><div class="bars" id="bars"></div><div class="error" id="error"></div></div>
+      <div class="card"><table><thead><tr><th>Episode</th><th>Seed</th><th>Result</th><th>Decisions</th><th>Reward</th></tr></thead><tbody id="history"></tbody></table></div>
+    </section>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id),ctx=$("arena").getContext("2d"),A=["left","right","shoot"];
+function draw(s){ctx.clearRect(0,0,640,480);ctx.fillStyle="#353b30";ctx.fillRect(0,0,640,480);ctx.fillStyle="#565d50";for(let x=0;x<640;x+=80)ctx.fillRect(x,0,2,480);ctx.fillStyle="#a3e635";ctx.fillRect(312,400,16,50);ctx.fillStyle="#f1f5e9";ctx.font="13px system-ui";ctx.fillText("PLAYER",292,470);if(s.view?.enemy_visible){const x=s.view.enemy_screen_x*2;ctx.fillStyle="#ef4444";ctx.beginPath();ctx.arc(x,165,34,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.fillText("MONSTER",x-32,115)}ctx.strokeStyle="#fb923c";ctx.beginPath();ctx.moveTo(320,210);ctx.lineTo(320,250);ctx.moveTo(300,230);ctx.lineTo(340,230);ctx.stroke();}
+function render(s){$("start").disabled=s.running;$("message").textContent=s.message;$("progress").textContent=`${s.episode}/${s.episodes}`;$("wins").textContent=s.wins;$("timeouts").textContent=s.timeouts;$("decisions").textContent=s.decisions;const mean=s.ms?.length?Math.round(s.ms.reduce((a,b)=>a+b,0)/s.ms.length):0;$("latency").textContent=`${mean} ms`;$("cost").textContent=`$${(s.usd||0).toFixed(4)}`;$("action").textContent=s.last?`Action: ${s.last.action} · ${s.last.ms} ms · ${s.last.attempts} attempt${s.last.attempts===1?"":"s"}`:"No decision yet";const p=s.last?.probabilities;$("bars").innerHTML=p?A.map(a=>`<span>${a}</span><span class="bar"><i style="width:${Math.round((p[a]||0)*100)}%"></i></span><span>${(p[a]||0).toFixed(2)}</span>`).join(""):"";$("error").textContent=s.last_error||"";$("history").innerHTML=(s.history||[]).map(x=>`<tr><td>${x.episode}</td><td>${x.seed}</td><td>${x.won?"win":"timeout"}</td><td>${x.decisions}</td><td>${x.reward}</td></tr>`).join("");draw(s)}
+async function poll(){try{render(await(await fetch("/state")).json())}finally{setTimeout(poll,250)}}
+$("form").onsubmit=async e=>{e.preventDefault();$("start").disabled=true;const body={controller:$("controller").value,episodes:Number($("episodes").value),seed:Number($("seed").value)};const r=await(await fetch("/start",{method:"POST",body:JSON.stringify(body)})).json();if(r.error){$("message").textContent=r.error;$("start").disabled=false}};poll();
+</script>
+</body>
+</html>

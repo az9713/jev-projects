@@ -29,7 +29,7 @@
 <body>
 <main>
 <h1>Jev projects</h1>
-<nav><a href="journey.html">Development journey</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<nav><a href="journey.html">Development journey</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="windows-feasibility.html">Windows feasibility</a><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="doom/doom.html">doom</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
 <p class="meta">
   <b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Repo:</b> <a href="https://github.com/az9713/jev-projects">github.com/az9713/jev-projects</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway, <code>ai</code> 7.0.107, Node 22 &nbsp;·&nbsp; <b>Built with:</b> Claude Code, model Fable 5.1, in one session<br>
   <b>Predecessors:</b> <a href="https://az9713.github.io/jev-model-router/">the model-router journey</a> and <a href="https://az9713.github.io/jev-email-triage/">the email-triage journey</a>.
@@ -38,7 +38,7 @@
 <div class="callout">Every page in this repo puts the measured latency on screen. The source videos show demos from machines close to the model. From this machine one Jev decision takes 300 to 1,200 ms. A demo that hides that number is a demo of the animation, not of Jev.</div>
 
 <h2>What was built: one page per project</h2>
-<p>Nine pieces, each one Node file with the questions at the top and, for the six visual ones, one HTML page that polls <code>/state</code> and draws. The pages need the Node server and a gateway key, so this site holds the results, not the live canvases.</p>
+<p>Ten pieces. Nine use Node directly; Doom uses Python for ViZDoom and a tiny Node worker so it shares the same Jev evaluator. Seven visual projects have an HTML page that polls <code>/state</code> and draws. This site replays measured runs because GitHub Pages cannot hold a gateway key or run the local servers.</p>
 <table>
 <tr><th>Project</th><th>What Jev decides</th><th>Loop</th><th>Check result</th></tr>
 <tr><td><a href="probe-burst.html"><code>probe-burst.mjs</code></a></td><td>Nothing; 50 boolean calls fired at once</td><td>one burst</td><td>48/50 ok, burst 7.8 s, per call min 1,079, median 1,230, max 7,739 ms (the max is the SDK's three retries on a 503)</td></tr>
@@ -48,6 +48,7 @@
 <tr><td><a href="sort.html"><code>sort/</code></a></td><td>Which of five queues a customer message goes to</td><td>20 calls in flight</td><td>303 labelled messages in 13.8 s, 21.9 items/s, 93.7% agreement with the labels, $0.006</td></tr>
 <tr><td><a href="logs.html"><code>logs/</code></a></td><td>Severity 0 to 3, page-the-on-call boolean, subsystem, per log line with three lines of context</td><td>streamed, 10 in flight</td><td>2,020 lines in 119 s (second run: 573 s, see below), $0.05. Routine max 1.37, incident min 1.47: no overlap. Page boolean fired on 18/20 incidents and 3 routine lines, both runs</td></tr>
 <tr><td><a href="lane.html"><code>lane/</code></a></td><td>Forward, ease left, ease right, brake, or stop, once per tick</td><td>ticked, 1,000 ms</td><td>5 runs of 60 ticks: Jev 13 collisions, forward-only 20, rule-based 0. Spec target (fewer than 3) not met</td></tr>
+<tr><td><a href="doom/doom.html"><code>doom/</code></a></td><td>Move left, move right, or shoot in ViZDoom's basic arena</td><td>turn-based, 4 game tics per decision</td><td>Rules 10/10 and random 7/10 on fixed seeds. Jev won 3/3 twice with 14 decisions and 0 errors; mean latency changed from 382 ms to 7,618 ms between consecutive runs; $0.00027 each</td></tr>
 <tr><td><a href="skill-router.html"><code>hooks/skill-router.mjs</code></a></td><td>Which of 147 Claude Code skills fits the prompt, or none</td><td>one call per prompt</td><td>6/6 test prompts matched; 9,920 input tokens, 408 to 6,926 ms, $0.0004 per prompt. A first run saw only 100 skills: 48 skill folders are links and <code>readdir</code> dirents report them as non-directories; fixed with <code>stat</code></td></tr>
 <tr><td><a href="verify.html"><code>hooks/verify.mjs</code></a></td><td>Twelve questions about a git diff in one call</td><td>one call per diff</td><td>On a synthetic diff: secret 0.99, test_weakened 0.99, debug_left 0.98, unrelated 0.88; risk 2.99 of 3; 340 ms, $0.00003</td></tr>
 </table>
@@ -66,6 +67,7 @@
   <li><b>Investigate is the town's default.</b> Both "Free bread at the bakery" and "A wolf is at the gate" got investigate as the modal action (36 and 29 of 50). The spread is in the tails: the wolf got 18 warn and 3 flee, the bread 7 join and 3 warn. The check asserts the tails, since the modal test from the spec cannot pass.</li>
   <li><b>The severity scale is compressed.</b> Only 12 of 20 injected incidents scored above the spec's 2.0 line on the 0 to 3 scale. But no routine line scored above 1.37 and no incident below 1.47, so the sets separate completely at 1.4. The page-the-on-call boolean is the sharper signal: 18 of 20 incidents above 0.5, 3 of 2,000 routine lines above it.</li>
   <li><b>Jev drives badly from text.</b> Without arithmetic help it collided 29 times in 5 runs of the fixed 60-tick script (17 obstacles). Adding a precomputed <code>ticks_to_impact</code> per obstacle cut that to 13 to 16. A driver that only goes forward: 20. A rule-based driver with the same information: 0. The check now asserts that Jev beats the forward-only driver.</li>
+  <li><b>Jev solves the small Doom arena, but gateway latency dominates wall time.</b> It won two consecutive 3/3 trials with identical seeds, 14 decisions, 0 errors, and $0.00027 per trial. Mean decision latency changed from 382 ms in the direct trial to 7,618 ms in the recorded replay minutes later. The game waits for each decision, so this first scenario proves action selection rather than real-time control.</li>
   <li><b>The gateway has slow hours.</b> The same 2,020-line check took 119 s at about 10:00 local time and 573 s at about 10:30, with 0 failed calls both times and the same separation (routine max 1.38, incident min 1.49). One lane run in that window averaged 8,567 ms per decision against 254 to 568 ms in the others. The 503 retries at 3, 6, 12, and 24 s in <code>lib.mjs</code> kept every answer and paid in wall time. A page that shows latency per call shows this; a page that shows only the animation would not.</li>
   <li><b>Sort accuracy is a rubric question.</b> 88.1% → 87.5% → 93.7% across three rubric versions with Jev unchanged. The remaining misses sit between sales, billing, and other, where the labels (written once by <code>anthropic/claude-sonnet-5</code>) are themselves one opinion.</li>
   <li><b>Chess: no illegal moves, no losses to random.</b> The options are the legal moves, so the schema does the legality. Five checkmates and five draws; two draws were the 200-ply cap.</li>
@@ -73,7 +75,7 @@
 
 <h2>Not built</h2>
 <ul>
-  <li>Minecraft, Doom, Melee, the trading bot, and the Sentry pipeline: out by the stack decision (Node only) or by missing hardware and accounts.</li>
+  <li>Minecraft remains unbuilt but is now feasible because Java is installed. Melee needs a legally obtained game image; the trading bot and live Sentry pipeline need external data or accounts. CARLA is unsuitable on the laptop's 4 GiB GPU.</li>
   <li>The wiki race lane against a chat model. Chess against a chat model is wired (a gateway model id in the page's opponent field, 10 s per move) but was not measured.</li>
   <li>The two hooks are written and checked but not installed into <code>~/.claude/settings.json</code>; each would add 300 to 1,000 ms to every prompt or edit. The README shows the line to add.</li>
   <li>The skill router's 30-prompt evaluation against real transcripts. Six hand-written prompts stand in.</li>
