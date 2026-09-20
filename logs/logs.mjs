@@ -33,6 +33,7 @@ const INCIDENTS = [
   "FATAL app segfault in worker 3, restarting loop (5 restarts in 2 min)", "ERROR db disk write failed: I/O error", "ERROR auth session store redis timeout for 90% of requests",
   "ERROR network load balancer marked all 4 backends unhealthy",
 ];
+const PAGE_THRESHOLD = 0.5;
 
 const stamp = (i) => new Date(Date.UTC(2026, 8, 19, 12, 0, 0) + i * 1000).toISOString().slice(11, 19);
 const score = async (line, previous) => {
@@ -69,14 +70,16 @@ if (args.includes("--check")) {
   // So the check asserts separation and the page boolean, not the absolute 2.0.
   const above = [...incidentAt].filter((i) => results[i]?.severity > routineMax).length;
   assert.ok(above >= 18, `only ${above}/20 incidents scored above the highest routine line (${routineMax.toFixed(2)})`);
+  assert.equal(failed, 0, `${failed} log lines failed to score`);
   assert.ok([...incidentAt].filter(paged).length >= 18, "page_oncall fired on fewer than 18/20 incidents");
   assert.ok(routine.filter(paged).length < 20, `page_oncall fired on ${routine.filter(paged).length} routine lines`);
 } else {
-  const rate = Number(args[args.indexOf("--rate") + 1]) || 5;
-  const state = { rate, lines: [], series: [], count: 0, usd: 0, inflight: 0, paged: null };
+  const rate = Math.min(20, Math.max(1, Number(args[args.indexOf("--rate") + 1]) || 5));
+  const state = { rate, lines: [], series: [], count: 0, usd: 0, inflight: 0, backpressured: 0, paged: null };
   const recent = [];
   let i = 0, seed = Date.now() % 1000; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
   setInterval(() => {
+    if (state.inflight >= 10) { state.backpressured++; return; }
     const incident = rnd() < 0.02;
     const line = `${new Date().toISOString().slice(11, 19)} ${incident ? INCIDENTS[Math.floor(rnd() * INCIDENTS.length)] : ROUTINE[Math.floor(rnd() * ROUTINE.length)]}`;
     const previous = recent.slice(-3); recent.push(line); if (recent.length > 3) recent.shift();
@@ -86,7 +89,7 @@ if (args.includes("--check")) {
       state.lines.unshift({ n, ...r }); state.lines.length = Math.min(state.lines.length, 200);
       state.series.push([n, r.severity]); if (state.series.length > 300) state.series.shift();
       state.count++; state.usd += r.usd;
-      if (r.page > 0.8) state.paged = { n, line, page: r.page, at: Date.now() };
+      if (r.page >= PAGE_THRESHOLD) state.paged = { n, line, page: r.page, at: Date.now() };
     }).catch((e) => { state.lines.unshift({ n, line, error: e.message.slice(0, 80) }); }).finally(() => state.inflight--);
   }, 1000 / rate);
   await serve(3005, new URL("./logs.html", import.meta.url), { "GET /state": () => state });

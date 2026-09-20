@@ -88,7 +88,7 @@
   function render(s) {
     const mean = s.ms.length ? Math.round(s.ms.reduce((a, b) => a + b, 0) / s.ms.length) : 0;
     $("stats").innerHTML = `<span>driver <b>${s.driver || "-"}</b></span><span>tick <b>${s.tick}/${s.ticks}</b></span><span>speed <b>${s.world.speed}</b></span><span>collisions <b>${s.collisions}</b></span>` +
-      `<span class="late">late answers <b>${s.late}</b></span><span>mean <b>${mean} ms</b> per decision</span><span><b>$${(s.usd || 0).toFixed(4)}</b></span>` + (s.done && s.tick ? "<span>done</span>" : "");
+      `<span class="late">late answers <b>${s.late}</b></span><span class="err">errors <b>${s.errors || 0}</b></span><span>mean <b>${mean} ms</b> per decision</span><span><b>$${(s.usd || 0).toFixed(4)}</b></span>` + (s.done && s.tick ? "<span>done</span>" : "");
     $("acth").textContent = s.last ? `Action: ${s.last.action}${s.last.late ? " (repeated, answer was late)" : ""} · danger ${s.danger == null ? "-" : s.danger.toFixed(2)}` : "Action probabilities";
     $("bars").innerHTML = s.probs ? ACTIONS.map((a) => `<span class="${a === s.last?.action ? "pick" : ""}" style="display:contents"><span>${a}</span><span class="bar"><i style="width:${Math.round((s.probs[a] || 0) * 100)}%"></i></span><span>${(s.probs[a] || 0).toFixed(2)}</span></span>`).join("") : "";
     drawSpark(s.ms, s.tickMs);

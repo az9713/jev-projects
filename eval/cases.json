@@ -1,0 +1,8 @@
+[
+  {"id":"secret-late","prefixChars":21000,"diff":"+const api_key = \"prod-secret-123456789\";","expected":{"fired":["secret"],"notFired":["new_dependency"]}},
+  {"id":"skipped-test","diff":"-test(\"rejects negatives\", check);\n+test.skip(\"rejects negatives\", check);","expected":{"fired":["test_weakened"],"notFired":["new_dependency","errors_swallowed"]}},
+  {"id":"dependency","diff":" package.json\n+  \"left-pad\": \"1.3.0\"","expected":{"fired":["new_dependency"],"notFired":["secret"]}},
+  {"id":"swallowed-error","diff":"+try { await save(); } catch (error) {}","expected":{"fired":["errors_swallowed"],"notFired":["secret"]}},
+  {"id":"sql-injection","diff":"+const rows = db.query(`SELECT * FROM users WHERE id = ${userInput}`);","expected":{"fired":["injection"],"notFired":["secret"]}},
+  {"id":"safe-docs","diff":" README.md\n+Run npm test before opening a pull request.","expected":{"fired":[],"notFired":["secret","test_weakened","new_dependency","injection"]}}
+]

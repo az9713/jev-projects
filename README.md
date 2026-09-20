@@ -71,6 +71,8 @@ node --env-file=.env probe-burst.mjs 50
 
 `town/town.json` and `sort/items.json` were written once by `anthropic/claude-sonnet-5` (`--gen`) and are committed, so runs are reproducible.
 
+`npm test` runs the free shared-evaluator checks and six held-out verifier cases. `npm run eval:live` runs those cases against Jev and saves the common JSONL result format under `eval/`. For a browser flow, start `node --env-file=.env lane/lane.mjs --tick 10`, then run `python tests/browser.py`; it drives the rule-based path without spending gateway credit.
+
 ### The two hooks are not installed
 
 `hooks/skill-router.mjs --hook` reads a UserPromptSubmit event and prints "Use skill X" when Jev's top pick is above 0.5. `hooks/verify.mjs --hook` reads a PostToolUse event for Edit or Write and prints the questions that fired for that file's diff. Each adds 300 to 1,000 ms to every prompt or edit. To install one, add it to `~/.claude/settings.json` yourself, for example:
@@ -82,7 +84,7 @@ node --env-file=.env probe-burst.mjs 50
 ## Findings
 
 - **Parallel bursts work, with a tail.** 50 calls at once: 48 returned in a median of 1,230 ms; two got 503 three times in a row. The gateway also returns short 503 bursts in sequential runs. `lib.mjs` retries four more times at 3, 6, 12, and 24 s.
-- **The SDK rejects a rounding tie.** `ai` 7.0.107 throws `AI_InvalidResponseDataError` when Jev's chosen option is not the highest probability after rounding to two decimals (chosen 0.13, another 0.14). Chess hit it in the second game. `ask()` keeps Jev's answer from the error's `data` and loses the metadata on that path.
+- **The SDK rejects a rounding tie.** `ai` 7.0.107 can throw `AI_InvalidResponseDataError` when the displayed probabilities round past the chosen option. The shared evaluator now reports that call as a failure instead of silently treating partial error data as a successful zero-cost answer.
 - **255 options is a hard cap.** 255 accepted, 256 refused. Empty-string descriptions are accepted; Jev reads the option name. On 255 fake titles plus "Napoleon Bonaparte", it picked the right one at p 0.97 in 337 ms.
 - **Batch-and-wait halves throughput.** Sorting in batches of 20 ran at 3.5 items/s because each batch waited for its slowest call (5 to 7 s tail). Twenty workers pulling from a queue ran at 21.9 items/s.
 - **"Investigate" is the town's default.** For both "Free bread at the bakery" and "A wolf is at the gate", the modal action was investigate (36 and 29 of 50). The events differ in the tails: the wolf gets flee and warn, the bread gets join.

@@ -46,7 +46,7 @@
   async function poll() {
     const s = await (await fetch("/state")).json();
     const ms = s.lines.filter((l) => l.ms).map((l) => l.ms);
-    $("stats").innerHTML = `<span><b>${s.rate}</b> lines/s generated</span><span><b>${s.count}</b> scored</span><span><b>${s.inflight}</b> in flight</span>` +
+    $("stats").innerHTML = `<span><b>${s.rate}</b> lines/s generated</span><span><b>${s.count}</b> scored</span><span><b>${s.inflight}</b> in flight</span><span><b>${s.backpressured || 0}</b> backpressured</span>` +
       `<span>mean <b>${ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0} ms</b> per line</span><span><b>$${s.usd.toFixed(4)}</b></span>`;
     const b = s.paged && Date.now() - s.paged.at < 15000;
     $("banner").className = "banner" + (b ? " on" : "");

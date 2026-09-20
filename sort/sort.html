@@ -87,7 +87,7 @@
   }
   function render(s) {
     const acc = s.labelled ? `<span>accuracy <b>${(100 * s.correct / s.labelled).toFixed(1)}%</b> on ${s.labelled} labelled</span>` : "";
-    $("stats").innerHTML = `<span><b>${s.done}/${s.total}</b> sorted</span><span><b>${s.perSec}</b> items/s</span><span><b>${(s.ms / 1000).toFixed(1)} s</b></span><span><b>$${(s.usd || 0).toFixed(4)}</b></span>${acc}` + (s.running ? "<span>running…</span>" : "");
+    $("stats").innerHTML = `<span><b>${s.done}/${s.total}</b> processed</span><span><b>${s.failed || 0}</b> failed</span><span><b>${s.perSec}</b> items/s</span><span><b>${(s.ms / 1000).toFixed(1)} s</b></span><span><b>$${(s.usd || 0).toFixed(4)}</b></span>${acc}` + (s.running ? "<span>running…</span>" : "");
     const mx = Math.max(1, ...s.conf);
     $("hist").innerHTML = s.conf.map((c) => `<i style="height:${Math.round(100 * c / mx)}%" title="${c}"></i>`).join("");
     $("histl").innerHTML = s.conf.map((_, i) => `<span>${(i / 10).toFixed(1)}</span>`).join("");

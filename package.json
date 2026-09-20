@@ -4,6 +4,10 @@
   "description": "Small demos of Jev (TypeSafe) through the Vercel AI Gateway: wiki race, town of agents, bullet chess, and more",
   "type": "module",
   "license": "ISC",
+  "scripts": {
+    "test": "node test.mjs && node eval.mjs",
+    "eval:live": "node --env-file=.env eval.mjs --live --out eval/results-live.jsonl"
+  },
   "dependencies": {
     "ai": "^7.0.107",
     "chess.js": "^1.0.0"
