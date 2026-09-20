@@ -5,6 +5,7 @@ Small demos of [Jev](https://docs.typesafe.ai/introduction), TypeSafe's decision
 The projects come from three YouTube videos about Jev (Matthew Berman, Ray Amjad, Witsam) and an assessment of which of their 32 demos can be built here. Two earlier ones live in their own repos: the [model router](https://github.com/az9713/jev-model-router) and the [email triage](https://github.com/az9713/jev-email-triage).
 
 - **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
+- **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
 
 ## The one rule
 
