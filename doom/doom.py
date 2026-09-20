@@ -49,9 +49,9 @@ SCENARIOS = {
         },
     },
     "corridor": {
-        "title": "Deadly corridor", "config": "deadly_corridor.cfg", "repeat": 8, "timeout": 700,
+        "title": "Deadly corridor", "config": "deadly_corridor.cfg", "repeat": 2, "timeout": 800,
         "goal": "Fight through the corridor and reach the green armor at the far end without dying.",
-        "instructions": "Advance through a corridor containing multiple armed enemies. Aim and shoot visible monsters, move toward the green armor, and retreat when immediate danger is high.",
+        "instructions": "Reach the green armor. Keep tracking the locked primary threat until it dies; align and shoot before advancing. With no threat, turn toward the goal bearing, move forward when aligned, and strafe if repeated forward actions make no progress.",
         "actions": {
             "strafe_left": [1, 0, 0, 0, 0, 0, 0], "strafe_right": [0, 1, 0, 0, 0, 0, 0],
             "shoot": [0, 0, 1, 0, 0, 0, 0], "forward": [0, 0, 0, 1, 0, 0, 0],
@@ -64,6 +64,12 @@ SCENARIOS = {
             "backward": "Retreat from a close centered threat", "turn_left": "Rotate left toward a target or the goal", "turn_right": "Rotate right toward a target or the goal",
         },
     },
+}
+SCENARIOS["corridor_stress"] = {
+    **SCENARIOS["corridor"],
+    "title": "Corridor under pressure", "repeat": 3, "timeout": 700, "max_targets": 2,
+    "goal": "Reach the armor with fewer visible targets and less time.",
+    "instructions": "Reach the green armor under partial observation and tighter time pressure. Keep the target lock, fire only when aligned, and resume goal-directed movement immediately after each kill.",
 }
 
 VARIABLES = (
@@ -126,13 +132,17 @@ def game_view(game: vzd.DoomGame, scenario: str) -> dict:
     goal = next((obj for obj in state.objects if obj.name == "GreenArmor"), None) if state else None
     goal_distance = round(math.hypot(goal.position_x - px, goal.position_y - py)) if goal else None
     spec = SCENARIOS[scenario]
+    heading = value(game, vzd.GameVariable.ANGLE)
+    goal_heading = math.degrees(math.atan2(goal.position_y - py, goal.position_x - px)) % 360 if goal else None
+    goal_bearing = round((goal_heading - heading + 180) % 360 - 180) if goal else None
     return {
         "scenario": scenario, "level": spec["title"], "goal": spec["goal"],
         "health": value(game, vzd.GameVariable.HEALTH), "ammo": value(game, vzd.GameVariable.AMMO2),
         "kills": value(game, vzd.GameVariable.KILLCOUNT), "items": value(game, vzd.GameVariable.ITEMCOUNT),
         "damage_taken": value(game, vzd.GameVariable.DAMAGE_TAKEN),
-        "position": {"x": round(px), "y": round(py), "heading_degrees": value(game, vzd.GameVariable.ANGLE)},
-        "goal_distance": goal_distance, "visible_targets": targets[:spec.get("max_targets", 8)],
+        "position": {"x": round(px), "y": round(py), "heading_degrees": heading},
+        "goal_distance": goal_distance, "goal_bearing_degrees": goal_bearing,
+        "visible_targets": targets[:spec.get("max_targets", 8)],
         "visible_monsters": sum(target["category"] == "Monster" for target in targets),
         "instructions": spec["instructions"], "action_descriptions": spec["descriptions"],
         "possible_actions": list(spec["actions"]),
@@ -144,13 +154,15 @@ def primary(view: dict, category: str) -> dict | None:
 
 
 def tactical_view(view: dict, previous: dict | None, memory: dict) -> dict:
-    monster = primary(view, "Monster")
+    monsters = [target for target in view["visible_targets"] if target["category"] == "Monster"]
+    monster = next((target for target in monsters if target["id"] == memory.get("last_target_id")), None)
+    monster = monster or (monsters[0] if monsters else None)
     if monster:
         height = monster["height"]
         threat = "immediate" if height >= 80 else "close" if height >= 40 else "distant"
         target = {
             "id": monster["id"], "name": monster["name"], "side": monster["side"],
-            "crosshair_error": monster["crosshair_error"], "range": threat,
+            "crosshair_error": monster["crosshair_error"], "height": monster["height"], "range": threat,
             "fire_ready": abs(monster["crosshair_error"]) <= 15,
         }
     else:
@@ -160,17 +172,36 @@ def tactical_view(view: dict, previous: dict | None, memory: dict) -> dict:
         "health_lost_last_step": max(0, previous["health"] - view["health"]) if previous else 0,
         "ammo_used_last_step": max(0, previous["ammo"] - view["ammo"]) if previous else 0,
         "kills_last_step": max(0, view["kills"] - previous["kills"]) if previous else 0,
+        "goal_bearing_degrees": view["goal_bearing_degrees"],
+        "goal_progress_last_step": previous["goal_distance"] - view["goal_distance"] if previous and previous["goal_distance"] is not None and view["goal_distance"] is not None else 0,
         "danger": "critical" if view["health"] < 25 else "high" if view["health"] < 60 or (previous and previous["health"] - view["health"] >= 20) else "normal",
     }
+    if view["scenario"].startswith("corridor"):
+        if target and target["fire_ready"]:
+            view["possible_actions"] = ["shoot", "backward"]
+        elif target:
+            direction = target["side"] if target["side"] in {"left", "right"} else "left" if target["crosshair_error"] < 0 else "right"
+            view["possible_actions"] = [f"turn_{direction}", f"strafe_{direction}", "backward"]
+        else:
+            bearing = view["goal_bearing_degrees"]
+            if bearing is not None and abs(bearing) > 8:
+                direction = "left" if bearing > 0 else "right"
+                view["possible_actions"] = [f"turn_{direction}", f"strafe_{direction}"]
+            else:
+                view["possible_actions"] = ["forward", "strafe_left", "strafe_right"]
+    progress = view["tactics"]["goal_progress_last_step"]
+    memory["stuck_steps"] = memory.get("stuck_steps", 0) + 1 if memory.get("previous_action") == "forward" and progress < 2 else 0
     view["short_term_memory"] = memory.copy()
     return view
 
 
 def remember(memory: dict, view: dict, action: str):
-    monster = primary(view, "Monster")
+    threat = view.get("tactics", {}).get("primary_threat")
+    monster = next((target for target in view["visible_targets"] if threat and target["id"] == threat["id"]), None)
     memory["same_action_count"] = memory["same_action_count"] + 1 if action == memory["previous_action"] else 1
     memory["previous_action"] = action
     if monster:
+        memory["last_target_id"] = monster["id"]
         memory["last_target_side"] = monster["side"]
         memory["no_target_steps"] = 0
         if monster["side"] in {"left", "right"}:
@@ -185,12 +216,21 @@ def action_repeat(view: dict, action: str) -> int:
         threat = view["tactics"]["primary_threat"]
         if action == "shoot" or not threat or abs(threat["crosshair_error"]) > 60:
             return 8
+    if view["scenario"].startswith("corridor"):
+        threat = view["tactics"]["primary_threat"]
+        if action == "shoot":
+            return 12
+        if action in {"forward", "backward", "strafe_left", "strafe_right"}:
+            return 8
+        if threat and abs(threat["crosshair_error"]) > 60:
+            return 4
     return spec["repeat"]
 
 
 def rule_action(view: dict) -> str:
     scenario = view["scenario"]
-    monster = primary(view, "Monster")
+    threat = view.get("tactics", {}).get("primary_threat")
+    monster = next((target for target in view["visible_targets"] if threat and target["id"] == threat["id"]), None) or primary(view, "Monster")
     if scenario == "basic":
         return "left" if monster and monster["side"] == "left" else "right" if monster and monster["side"] == "right" else "shoot"
     if scenario.startswith("defend"):
@@ -208,6 +248,11 @@ def rule_action(view: dict) -> str:
     armor = primary(view, "Armor")
     if armor:
         return "turn_left" if armor["side"] == "left" else "turn_right" if armor["side"] == "right" else "forward"
+    bearing = view.get("goal_bearing_degrees")
+    if bearing is not None and abs(bearing) > 8:
+        return "turn_left" if bearing > 0 else "turn_right"
+    if view.get("short_term_memory", {}).get("stuck_steps", 0) >= 3:
+        return "strafe_right"
     return "forward"
 
 
@@ -260,7 +305,7 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
             episode_decisions = episode_errors = episode_fallbacks = 0
             episode_cost, episode_ms_start = result["usd"], len(result["ms"])
             previous = None
-            memory = {"previous_action": None, "same_action_count": 0, "last_target_side": None, "no_target_steps": 0, "scan_direction": "turn_right"}
+            memory = {"previous_action": None, "same_action_count": 0, "last_target_id": None, "last_target_side": None, "no_target_steps": 0, "scan_direction": "turn_right", "stuck_steps": 0}
             while not game.is_episode_finished():
                 current = tactical_view(game_view(game, scenario), previous, memory)
                 started = perf_counter()
@@ -275,6 +320,8 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
                         decision = worker.decide(current)
                         action, probabilities = decision["action"], decision["probabilities"]
                         elapsed, usd, attempts = decision["ms"], decision["usd"], decision["attempts"]
+                    if controller == "jev" and action not in current["possible_actions"]:
+                        raise ValueError(f"action {action!r} is not currently available")
                 except Exception as error:
                     action, fallback = rule_action(current), True
                     elapsed, usd, attempts = round((perf_counter() - started) * 1000), 0, 0
@@ -293,7 +340,7 @@ def play(scenario: str, controller: str, episodes: int, seed: int, visible: bool
                     result["ms"].append(elapsed)
                 result["episode"] = episode + 1
                 result["view"] = current
-                result["last"] = {"action": action, "probabilities": probabilities, "ms": elapsed, "usd": usd, "attempts": attempts, "fallback": fallback}
+                result["last"] = {"action": action, "actions": current["possible_actions"], "probabilities": probabilities, "ms": elapsed, "usd": usd, "attempts": attempts, "fallback": fallback}
                 if notify:
                     notify(result)
             final = tactical_view(game_view(game, scenario), previous, memory)
@@ -378,9 +425,11 @@ def check():
     defend_rules = play("defend", "rules", 10, 42, False)
     stress_rules = play("defend_stress", "rules", 1, 43, False)
     corridor_rules = play("corridor", "rules", 1, 42, False)
+    corridor_stress_rules = play("corridor_stress", "rules", 1, 42, False)
     assert defend_rules["successes"] >= 8 and defend_rules["kills"] > 0, defend_rules
     assert stress_rules["decisions"] > 0 and stress_rules["errors"] == 0, stress_rules
-    assert corridor_rules["decisions"] > 0 and corridor_rules["errors"] == 0, corridor_rules
+    assert corridor_rules["successes"] == 1 and corridor_rules["kills"] >= 5 and corridor_rules["errors"] == 0, corridor_rules
+    assert corridor_stress_rules["decisions"] > 0 and corridor_stress_rules["errors"] == 0, corridor_stress_rules
     print(f"doom check passed: basic rules {basic_rules['successes']}/10 vs random {basic_random['successes']}/10; "
           f"defend {defend_rules['successes']}/10 survived with {defend_rules['kills']} kills; "
           f"pressure {stress_rules['kills']} kills; corridor {corridor_rules['kills']} kills, success {corridor_rules['successes']}/1")

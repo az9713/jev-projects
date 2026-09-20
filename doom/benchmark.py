@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import math
+import argparse
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from statistics import mean, median
@@ -10,19 +11,20 @@ from statistics import mean, median
 from doom import play
 
 
-def run_chunk(scenario: str, first_seed: int, episodes: int) -> dict:
-    return play(scenario, "jev", episodes, first_seed, False)
+def run_chunk(scenario: str, controller: str, first_seed: int, episodes: int) -> dict:
+    return play(scenario, controller, episodes, first_seed, False)
 
 
-def evaluate(name: str, scenario: str, first_seed: int, episodes: int, workers: int = 5) -> dict:
+def evaluate(name: str, scenario: str, controller: str, first_seed: int, episodes: int, workers: int = 5) -> dict:
     size = math.ceil(episodes / workers)
-    chunks = [(scenario, first_seed + offset, min(size, episodes - offset)) for offset in range(0, episodes, size)]
+    chunks = [(scenario, controller, first_seed + offset, min(size, episodes - offset)) for offset in range(0, episodes, size)]
     with ProcessPoolExecutor(max_workers=len(chunks)) as pool:
         runs = list(pool.map(run_chunk, *zip(*chunks)))
     history = sorted((episode for run in runs for episode in run["history"]), key=lambda episode: episode["seed"])
     decisions = sum(episode["decisions"] for episode in history)
     summary = {
-        "name": name, "scenario": scenario, "first_seed": first_seed, "last_seed": first_seed + episodes - 1,
+        "name": name, "scenario": scenario, "controller": controller,
+        "first_seed": first_seed, "last_seed": first_seed + episodes - 1,
         "episodes": episodes, "survived": sum(episode["success"] for episode in history),
         "survival_rate": round(mean(episode["success"] for episode in history), 3),
         "median_kills": median(episode["kills"] for episode in history),
@@ -40,16 +42,25 @@ def evaluate(name: str, scenario: str, first_seed: int, episodes: int, workers: 
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("scenario", nargs="?", choices=["defend", "corridor"], default="defend")
+    args = parser.parse_args()
+    config = {
+        "defend": {"seeds": (100, 200, 1000), "rules": 2000, "stress": ("defend_stress", 3000), "kills": 3, "cost": .002, "output": "jev-evaluation.json"},
+        "corridor": {"seeds": (400, 500, 1500), "rules": 2500, "stress": ("corridor_stress", 4000), "kills": 5, "cost": .003, "output": "corridor-evaluation.json"},
+    }[args.scenario]
     results = {
-        "development": evaluate("development", "defend", 100, 10),
-        "validation": evaluate("validation", "defend", 200, 20),
-        "final": evaluate("final", "defend", 1000, 50),
+        "rule_baseline": evaluate("rule_baseline", args.scenario, "rules", config["rules"], 100),
+        "development": evaluate("development", args.scenario, "jev", config["seeds"][0], 10),
+        "validation": evaluate("validation", args.scenario, "jev", config["seeds"][1], 20),
+        "final": evaluate("final", args.scenario, "jev", config["seeds"][2], 50),
     }
     final = results["final"]
     results["standard_gate_passed"] = (
-        final["survival_rate"] >= .7 and final["median_kills"] >= 3 and
-        final["fallback_rate"] < .02 and final["mean_cost_usd"] < .002 and
+        final["survival_rate"] >= .7 and final["median_kills"] >= config["kills"] and
+        final["fallback_rate"] < .02 and final["mean_cost_usd"] < config["cost"] and
         final["median_p95_latency_ms"] < 500
     )
-    results["stress"] = evaluate("stress", "defend_stress", 3000, 10) if results["standard_gate_passed"] else {"status": "skipped"}
-    Path(__file__).with_name("jev-evaluation.json").write_text(json.dumps(results, indent=2) + "\n")
+    stress_scenario, stress_seed = config["stress"]
+    results["stress"] = evaluate("stress", stress_scenario, "jev", stress_seed, 10) if results["standard_gate_passed"] else {"status": "skipped"}
+    Path(__file__).with_name(config["output"]).write_text(json.dumps(results, indent=2) + "\n")

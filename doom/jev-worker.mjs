@@ -11,13 +11,15 @@ for await (const line of readline.createInterface({ input: process.stdin })) {
       ammunition: state.ammo,
       kills: state.kills,
       visible_monsters: state.visible_monsters,
+      allowed_actions: state.possible_actions,
       tactics: state.tactics,
       short_term_memory: state.short_term_memory,
     };
+    const criteria = Object.fromEntries(state.possible_actions.map(action => [action, state.action_descriptions[action]]));
     const result = await ask(observation, { action: {
       type: "choice",
       instructions: state.instructions,
-      criteria: state.action_descriptions,
+      criteria,
     } });
     process.stdout.write(JSON.stringify({
       action: result.answers.action.choice,

@@ -23,7 +23,7 @@ Every page puts the measured latency on screen. The videos show demos from machi
 | `sort/` | [sort at scale](https://az9713.github.io/jev-projects/sort/sort.html) | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
 | `logs/` | [log monitor](https://az9713.github.io/jev-projects/logs/logs.html) | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
 | `lane/` | [lane sim](https://az9713.github.io/jev-projects/lane/lane.html) | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
-| `doom/` | [ViZDoom stress suite](https://az9713.github.io/jev-projects/doom/doom.html) | 3007 | Aim, defend, survive a harder pressure mode, or fight through a corridor | Jev survived 50/50 held-out Level 2 seeds with median 11 kills, zero fallbacks and $0.00143 mean cost; harder pressure mode: 5/10 survived |
+| `doom/` | [ViZDoom stress suite](https://az9713.github.io/jev-projects/doom/doom.html) | 3007 | Aim, defend, and navigate a combat corridor, each with harder pressure modes | Level 2: 50/50 final survival. Level 3: 41/50 reached the armor with median 6 kills, zero fallbacks and $0.00179 mean cost; corridor pressure: 8/10 |
 | `hooks/skill-router.mjs` | – | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
 
@@ -84,6 +84,7 @@ doom/.venv/Scripts/python doom/doom.py          # http://localhost:3007
 doom/.venv/Scripts/python doom/doom.py --run jev --scenario defend --episodes 1 --headless
 doom/.venv/Scripts/python doom/doom.py --run rules --scenario defend --episodes 100 --seed 1000 --headless
 doom/.venv/Scripts/python doom/benchmark.py  # development, validation, final and pressure gates
+doom/.venv/Scripts/python doom/benchmark.py corridor
 ```
 
 `town/town.json` and `sort/items.json` were written once by `anthropic/claude-sonnet-5` (`--gen`) and are committed, so runs are reproducible.

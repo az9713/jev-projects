@@ -13,7 +13,7 @@ const RUNS = {
   sort:  { port: 3004, every: 250, start: ["/start", { n: 1000 }], done: (s) => !s.running },
   logs:  { port: 3005, every: 500, start: null, seconds: 40 }, // no start route: the server generates lines from launch
   lane:  { port: 3006, every: 200, start: ["/start", { driver: "jev", seed: 42 }], done: (s) => s.done },
-  doom:  { port: 3007, every: 250, start: ["/start", { scenario: "defend", controller: "jev", episodes: 1, seed: 42 }], done: (s) => !s.running && s.message === "Complete" },
+  doom:  { port: 3007, every: 250, start: ["/start", { scenario: "corridor", controller: "jev", episodes: 1, seed: 42 }], done: (s) => !s.running && s.message === "Complete" },
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const getState = async (base) => (await fetch(base + "/state")).json();
