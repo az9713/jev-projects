@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="What changed across the Jev projects reliability upgrade, why the changes matter, and how they work.">
+<title>Jev Projects — Measurement and Verifier Upgrade</title>
+<style>
+  :root{--bg:#0f0f10;--surface:#1a1a1d;--surface2:#202024;--border:#303036;--text:#f7f7f8;--muted:#aaaab3;--accent:#a78bfa;--accent2:#2dd4bf;--good:#86efac;--warn:#fcd34d;--radius:12px}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 85% 0,#261d48 0,transparent 30rem),var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--accent2)}code{font:0.9em ui-monospace,Consolas,monospace;background:#101012;border:1px solid var(--border);padding:.1rem .35rem;border-radius:5px}main{max-width:1040px;margin:auto;padding:28px 20px 80px}nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:52px;font-size:14px}nav a{text-decoration:none;color:var(--muted)}nav a:hover,nav a:focus{color:var(--text)}.eyebrow{color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.hero{max-width:850px;margin-bottom:42px}.hero h1{font-size:clamp(2.2rem,6vw,4.6rem);line-height:1.02;letter-spacing:-.04em;margin:10px 0 18px}.hero p{font-size:1.18rem;color:#d2d2d8;max-width:760px}.badge{display:inline-block;border:1px solid #5e4ca5;background:#292044;color:#e5ddff;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700}.stats,.cards,.flow{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,1fr);margin:30px 0 76px}.stat,.card,.step,.callout,.table-wrap{background:linear-gradient(145deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--radius)}.stat{padding:18px}.stat strong{display:block;font-size:1.75rem;line-height:1.1;color:var(--accent)}.stat span{color:var(--muted);font-size:13px}section{margin:76px 0}h2{font-size:clamp(1.6rem,3vw,2.2rem);margin:0 0 10px;letter-spacing:-.02em}section>p{color:var(--muted);max-width:790px;margin:0 0 24px}.cards{grid-template-columns:repeat(2,1fr)}.card{padding:22px}.card h3{margin:0 0 7px;font-size:1.05rem}.card p{margin:0;color:var(--muted)}.tag{display:inline-block;color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}.flow{grid-template-columns:repeat(5,1fr);counter-reset:flow}.step{padding:18px}.step:before{counter-increment:flow;content:counter(flow);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(167,139,250,.16);color:var(--accent);font-weight:800;margin-bottom:12px}.step h3{font-size:.95rem;margin:0 0 5px}.step p{font-size:13px;color:var(--muted);margin:0}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:760px}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:top}th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}tr:last-child td{border-bottom:0}.good{color:var(--good);font-weight:700}.callout{padding:22px;border-left:4px solid var(--warn)}.callout h3{margin:0 0 6px}.callout p{margin:0;color:#d2d2d8}pre{background:#09090b;border:1px solid var(--border);border-radius:var(--radius);padding:18px;overflow:auto;color:#e5ddff}pre code{border:0;padding:0;background:none}.footer{color:var(--muted);border-top:1px solid var(--border);padding-top:24px;font-size:14px}.footer a{margin-right:16px}@media(max-width:760px){.stats,.cards{grid-template-columns:1fr 1fr}.flow{grid-template-columns:1fr}.hero h1{font-size:2.6rem}}@media(max-width:460px){.stats,.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <nav aria-label="Report navigation">
+    <a href="index.html">All projects</a><a href="journey.html">Original journey</a><a href="#what">What changed</a><a href="#why">Why</a><a href="#how">How</a><a href="#evidence">Evidence</a><a href="https://github.com/az9713/jev-projects">Source</a>
+  </nav>
+  <header class="hero">
+    <div class="eyebrow">Jev projects · measurement and verifier upgrade</div>
+    <h1>Failures now count. Late work has a cost. Full diffs get examined.</h1>
+    <p>The upgrade repairs measurement errors across burst, sort, logs, and lane demonstrations, then gives the diff verifier complete staged and untracked coverage with repeatable held-out evidence.</p>
+    <span class="badge">Merged to main · 19 September 2026</span>
+  </header>
+  <div class="stats" aria-label="Measured results">
+    <div class="stat"><strong>6/6</strong><span>live verifier cases passed</span></div>
+    <div class="stat"><strong>50/50</strong><span>parallel burst calls returned</span></div>
+    <div class="stat"><strong>0/50</strong><span>even/odd decisions wrong</span></div>
+    <div class="stat"><strong>$0.000411</strong><span>live verifier evaluation cost</span></div>
+  </div>
+
+  <section id="what">
+    <h2>What changed</h2>
+    <p>Each repair sits at the point where measurement or failure information was previously lost.</p>
+    <div class="cards">
+      <article class="card"><span class="tag">Shared evaluator</span><h3>Invalid responses remain failures</h3><p><code>ask()</code> no longer converts any <code>AI_InvalidResponseDataError</code> with attached data into a zero-cost success. Retry attempts and required answers are explicit.</p></article>
+      <article class="card"><span class="tag">Burst</span><h3>Parity follows the original input</h3><p>Each fulfilled result carries its source number. Failure filtering can no longer shift array indices and create false even/odd errors.</p></article>
+      <article class="card"><span class="tag">Sort</span><h3>Accuracy cannot hide failed calls</h3><p>The state counts failures, the page displays them, and the check requires every item to be scored before it accepts the accuracy result.</p></article>
+      <article class="card"><span class="tag">Logs</span><h3>Live concurrency is bounded</h3><p>At most ten scoring calls remain in flight. Additional ticks are counted as backpressure, displayed in the UI, and paging uses one 0.5 threshold.</p></article>
+      <article class="card"><span class="tag">Lane</span><h3>Late calls cannot pile up</h3><p>Only one decision remains pending. A late answer is discarded as an action but its latency, cost, or error is recorded before the next Jev call begins.</p></article>
+      <article class="card"><span class="tag">Verifier</span><h3>The full change is examined</h3><p>Tracked, staged, and untracked text is split into 20,000-character chunks. Boolean maxima and highest risk scores are aggregated across every chunk.</p></article>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2>Why these changes were needed</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Application</th><th>Previous measurement defect</th><th>Repair</th></tr></thead>
+      <tbody>
+        <tr><td><code>probe-burst</code></td><td>Rejected calls were removed before parity was checked, so the post-filter index could be mistaken for the original number.</td><td>Carry <code>n</code> inside each fulfilled result and compare against that value.</td></tr>
+        <tr><td><code>sort</code></td><td>Accuracy used only successful labelled rows. A run with widespread request failures could still pass.</td><td>Count failures and require <code>ok === total</code> plus complete labelled coverage.</td></tr>
+        <tr><td><code>logs</code></td><td>The live loop launched work without a cap, and UI paging used 0.8 while the check used 0.5.</td><td>Cap at ten in flight, expose backpressure, and use one threshold.</td></tr>
+        <tr><td><code>lane</code></td><td>Every timeout launched another request while the old one continued. Completed late calls disappeared from cost totals.</td><td>Retain one pending promise, repeat the previous action, then account for the settled call.</td></tr>
+        <tr><td><code>verify</code></td><td>Only the first 20,000 characters and unstaged tracked edits were visible.</td><td>Read the full base diff plus untracked files, evaluate all chunks, and aggregate results.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="how">
+    <h2>How full-diff verification works</h2>
+    <p>The verifier remains one small script. It uses Git and the Node standard library, then asks the existing Jev question set about each bounded chunk.</p>
+    <div class="flow">
+      <article class="step"><h3>Collect</h3><p>Read tracked and staged changes from the selected base.</p></article>
+      <article class="step"><h3>Include</h3><p>Represent non-ignored untracked text as added-file diffs.</p></article>
+      <article class="step"><h3>Chunk</h3><p>Split complete input into bounded 20,000-character states.</p></article>
+      <article class="step"><h3>Evaluate</h3><p>Ask the same twelve questions about every part.</p></article>
+      <article class="step"><h3>Aggregate</h3><p>Keep maximum boolean probabilities and highest risk scores.</p></article>
+    </div>
+    <pre><code>npm test
+npm run eval:live
+node --env-file=.env hooks/verify.mjs --base main
+node --env-file=.env probe-burst.mjs 50
+
+# Browser flow: start the server, then drive the rule-based lane
+node --env-file=.env lane/lane.mjs --tick 10
+python tests/browser.py</code></pre>
+  </section>
+
+  <section id="evidence">
+    <h2>What the evidence says</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Check</th><th>Result</th><th>Finding</th></tr></thead>
+      <tbody>
+        <tr><td>Offline verifier suite</td><td class="good">6/6</td><td>Secret, skipped test, dependency, swallowed error, injection, and safe documentation cases obey the expected signals.</td></tr>
+        <tr><td>Secret after old cutoff</td><td class="good">Detected at p 0.98</td><td>A secret placed after 21,000 filler characters proves that later chunks are evaluated.</td></tr>
+        <tr><td>Live verifier suite</td><td class="good">6/6, 0 errors</td><td>Total cost was $0.000410802; median case latency was 1,810 ms and the slowest was 10,820 ms.</td></tr>
+        <tr><td>Threshold boundary</td><td>0.50 no longer fires</td><td>Jev returned exactly 0.50 for an unrelated “errors swallowed” question. Requiring probability above 0.5 removed the false alarm.</td></tr>
+        <tr><td>Concurrent burst</td><td class="good">50/50 returned; 0 wrong</td><td>The repaired index accounting reported a 4,206 ms burst, with 3,972 ms median per call.</td></tr>
+        <tr><td>Lane browser flow</td><td class="good">60 ticks, 0 rule-driver collisions</td><td>The real page, polling loop, start action, state rendering, and new failure counters work together without console errors.</td></tr>
+      </tbody>
+    </table></div>
+    <aside class="callout"><h3>Interpretation boundary</h3><p>The verifier suite is intentionally small and synthetic. It proves full-input coverage and known signals, not general code-review accuracy. Production use needs a larger corpus of real diffs with preassigned expected flags and explicit false-positive costs.</p></aside>
+  </section>
+
+  <footer class="footer">
+    <p>Change: <a href="https://github.com/az9713/jev-projects/pull/1">PR #1</a> · merged commit <code>b462a85</code></p>
+    <a href="https://az9713.github.io/jev-model-router/reliability-upgrade.html">Model router report</a><a href="https://az9713.github.io/jev-email-triage/reliability-upgrade.html">Email triage report</a>
+  </footer>
+</main>
+</body>
+</html>
