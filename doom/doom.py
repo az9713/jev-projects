@@ -28,7 +28,7 @@ SCENARIOS = {
         "descriptions": {"left": "Strafe left to move the visible monster toward the crosshair", "right": "Strafe right to move the visible monster toward the crosshair", "shoot": "Fire when a monster is centered"},
     },
     "defend": {
-        "title": "Defend the center", "config": "defend_the_center.cfg", "repeat": 8, "timeout": 420,
+        "title": "Defend the center", "config": "defend_the_center.cfg", "repeat": 4, "timeout": 420,
         "goal": "Survive attacks from every direction, conserve ammunition, and kill as many monsters as possible.",
         "instructions": "You stand in the center while monsters approach from all directions. Turn toward a visible monster and shoot when centered. Conserve limited ammunition.",
         "actions": {"turn_left": [1, 0, 0], "turn_right": [0, 1, 0], "shoot": [0, 0, 1]},
@@ -302,12 +302,13 @@ def check():
     basic_random = play("basic", "random", 10, 0, False)
     assert basic_rules["successes"] == 10, basic_rules
     assert basic_rules["successes"] > basic_random["successes"], (basic_rules, basic_random)
-    defend_rules = play("defend", "rules", 1, 42, False)
+    defend_rules = play("defend", "rules", 10, 42, False)
     corridor_rules = play("corridor", "rules", 1, 42, False)
-    assert defend_rules["kills"] > 0, defend_rules
+    assert defend_rules["successes"] >= 8 and defend_rules["kills"] > 0, defend_rules
     assert corridor_rules["decisions"] > 0 and corridor_rules["errors"] == 0, corridor_rules
     print(f"doom check passed: basic rules {basic_rules['successes']}/10 vs random {basic_random['successes']}/10; "
-          f"defend {defend_rules['kills']} kills; corridor {corridor_rules['kills']} kills, success {corridor_rules['successes']}/1")
+          f"defend {defend_rules['successes']}/10 survived with {defend_rules['kills']} kills; "
+          f"corridor {corridor_rules['kills']} kills, success {corridor_rules['successes']}/1")
 
 
 if __name__ == "__main__":
