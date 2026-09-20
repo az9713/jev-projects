@@ -30,11 +30,14 @@ async function record(name) {
     for (let i = 0; ; i++) { try { await getState(base); break; } catch { if (i > 100) throw new Error(`${name}: no server on ${r.port}`); await sleep(200); } }
   }
   try {
-    const frames = [], t0 = Date.now(); let last = "";
+    const frames = []; let t0 = Date.now(), last = "";
     const snap = async () => { const s = await getState(base); const j = JSON.stringify(s); if (j !== last) { last = j; frames.push({ t: Date.now() - t0, s }); } return s; };
-    await snap();
-    if (r.start) { const res = await (await fetch(base + r.start[0], { method: "POST", body: JSON.stringify(r.start[1]) })).json(); if (res.error) throw new Error(`${name}: ${res.error}`); }
-    for (;;) { const s = await snap(); if (r.start ? r.done(s) && frames.length > 1 : Date.now() - t0 > r.seconds * 1000) break; await sleep(r.every); }
+    if (r.start) {
+      const res = await (await fetch(base + r.start[0], { method: "POST", body: JSON.stringify(r.start[1]) })).json();
+      if (res.error) throw new Error(`${name}: ${res.error}`);
+      t0 = Date.now(); // Do not embed stale state from a previous server run.
+    }
+    for (;;) { const s = await snap(); if (r.start ? r.done(s) : Date.now() - t0 > r.seconds * 1000) break; await sleep(r.every); }
     // Keys equal to frame 0 are dropped from later frames; the page merges them back. Town carries town.json in every frame otherwise.
     const first = frames[0].s;
     for (const f of frames.slice(1)) for (const k of Object.keys(f.s)) if (JSON.stringify(f.s[k]) === JSON.stringify(first[k])) delete f.s[k];
