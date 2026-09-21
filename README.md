@@ -15,7 +15,7 @@ The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad,
 - **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
 - **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
 - **Windows feasibility:** https://az9713.github.io/jev-projects/windows-feasibility.html — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
-- **Jev Coding Reflex specification:** https://az9713.github.io/jev-projects/coding-reflex-spec.html — how a proposed Codex hook would compare the task, Git diff and test result, with a complete dry-run example and evaluation gates.
+- **Jev Coding Reflex:** https://az9713.github.io/jev-projects/coding-reflex-spec.html — exactly where Jev enters a Codex task, what evidence it receives, how its decision resumes Codex, and the measured repair loop. [Watch the recorded Codex demonstration](https://az9713.github.io/jev-projects/coding-reflex-video.html).
 
 ## The one rule
 
@@ -46,7 +46,7 @@ Every page puts measured latency on screen. Compact successful choices in these 
 
 ### Videos
 
-Screen recordings of five pages, 5 to 27 s each, silent. Click a picture to play the video or its dedicated watch page.
+Screen recordings of six projects, from short application replays to the complete 4:16 Coding Reflex session. Click a picture to play the video or open its dedicated watch page.
 
 <table>
 <tr>
@@ -59,6 +59,9 @@ Screen recordings of five pages, 5 to 27 s each, silent. Click a picture to play
 </tr>
 <tr>
 <td colspan="2"><a href="https://az9713.github.io/jev-projects/doom/video.html"><img src="docs/video/jev_doom_level3.jpg" alt="Jev completes ViZDoom Level 3 with live decisions, probabilities, latency and cost" width="100%"></a><br><b>ViZDoom Level 3</b>, 24 s: six kills, 52 health, 76 decisions, 261 ms mean decision latency and no fallback. The linked GitHub Page includes the video, full performance explanation and 73 captured decision snapshots.</td>
+</tr>
+<tr>
+<td colspan="2"><a href="https://az9713.github.io/jev-projects/coding-reflex-video.html"><img src="docs/video/jev-coding-reflex-demo.jpg" alt="Codex is blocked after Jev detects an untested behavior and incomplete task" width="100%"></a><br><b>Jev Coding Reflex</b>, 4 min 16 s: a real persistent Codex session in which Jev returns two findings in 988 ms, Codex adds the missing behavior test, and the second Jev review is clean in 581 ms. Click the screenshot to watch the compressed video on GitHub Pages.</td>
 </tr>
 </table>
 

@@ -53,6 +53,19 @@
   .finding { display:grid; grid-template-columns:105px 1fr; gap:12px; margin-top:12px; padding:13px; border-radius:9px; background:#241a21; border:1px solid #573041; }
   .finding b { color:#fecdd3; }
   .finding p { margin:0; }
+  .video-card { display:block; margin:22px 0; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--surface); text-decoration:none; }
+  .video-card img { display:block; width:100%; height:auto; }
+  .video-card span { display:block; padding:12px 16px; color:var(--text2); }
+  .video-card strong { color:var(--teal); }
+  .subhead { margin:36px 0 10px; color:var(--text); font-size:21px; }
+  .sequence { margin:22px 0; overflow:hidden; border:1px solid var(--border); border-radius:12px; background:#08101c; }
+  .sequence-head { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); }
+  .sequence-head b { padding:11px 8px; background:var(--surface2); color:var(--lime); text-align:center; }
+  .sequence ol { margin:0; padding:14px 18px 16px 46px; }
+  .sequence li { padding:7px 4px; color:var(--text2); border-bottom:1px solid rgba(43,59,82,.45); }
+  .sequence li:last-child { border-bottom:0; }
+  .sequence .route { display:inline-block; min-width:190px; color:var(--teal); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-weight:700; }
+  .sequence .branch { color:var(--orange); font-weight:700; }
   .checklist { padding-left:0; list-style:none; }
   .checklist li { position:relative; padding:7px 0 7px 30px; border-bottom:1px solid rgba(43,59,82,.55); }
   .checklist li::before { content:"✓"; position:absolute; left:3px; color:var(--lime); font-weight:800; }
@@ -62,6 +75,8 @@
     .flow { grid-template-columns:1fr; }
     .arrow { transform:rotate(90deg); }
     table { display:block; max-width:100%; overflow-x:auto; }
+    .sequence-head { font-size:12px; }
+    .sequence .route { display:block; min-width:0; margin-bottom:2px; }
   }
   @media print {
     body { background:#fff; color:#111827; }
@@ -77,6 +92,7 @@
 <main>
 <nav aria-label="Site navigation">
   <a href="index.html">All Jev projects</a>
+  <a href="coding-reflex-video.html">Watch the Codex demonstration</a>
   <a href="verify.html">Current diff verifier</a>
   <a href="https://github.com/az9713/jev-projects">GitHub repository</a>
 </nav>
@@ -94,6 +110,16 @@
 </header>
 
 <div class="callout"><strong>The central idea:</strong> no pull request is required. Git already knows what Codex changed. Jev receives the task, the change since the task began, and the test outcome; it returns no more than three findings for Codex to investigate. The repository now contains a working prototype and a measured Codex run.</div>
+
+<section id="video">
+  <h2>Recorded Codex demonstration</h2>
+  <p>Watch a real persistent Codex session in which Jev blocks an incomplete first completion, Codex adds the missing behavior test, and a second Jev review passes.</p>
+  <a class="video-card" href="coding-reflex-video.html">
+    <img src="video/jev-coding-reflex-demo.jpg" alt="Codex stopped by Jev Coding Reflex after Jev detects an untested behavior and incomplete task">
+    <span><strong>Click the screenshot to watch the 4:16 demonstration.</strong> The browser-ready recording is 5.0 MB.</span>
+  </a>
+  <p>The recording is a second controlled run: its first Stop reported <code>behavior_untested</code> 0.83 and <code>task_incomplete</code> 0.78 in 988 ms; after Codex added the direct test, the second Stop was clean in 581 ms. Section 5 retains the earlier measured run as separate evidence.</p>
+</section>
 
 <section id="purpose">
   <h2>1. Purpose and boundary</h2>
@@ -120,6 +146,130 @@
     <div class="node"><b>Report to you</b><small>What changed, checks and residual risk</small></div>
   </div>
   <p>The minimal Codex integration saves the baseline at task start, records recognized test commands and exit results after tool use, and performs the review at task stop. The post-tool recorder is local and does not call Jev. Running Jev after every edit is deliberately deferred because it would add cost, latency and repetitive findings without first proving better outcomes.</p>
+
+  <h3 class="subhead">Where Jev comes into play</h3>
+  <p><strong>The key point is: Jev participates only when Codex tries to finish.</strong> It does not write code or run tests. It acts as a fast external reviewer inside the <code>Stop</code> hook.</p>
+
+  <div class="sequence" role="img" aria-label="Communication sequence among the user, Codex, the Reflex hook and the Jev model">
+    <div class="sequence-head"><b>You</b><b>Codex</b><b>Reflex hook</b><b>Jev model</b></div>
+    <ol>
+      <li><span class="route">You → Codex</span>Coding request</li>
+      <li><span class="route">Codex → Codex</span>Edit files and run tests</li>
+      <li><span class="route">Codex → Reflex hook</span>Attempt to finish</li>
+      <li><span class="route">Reflex hook → Reflex hook</span>Collect request, Git diff and tests</li>
+      <li><span class="route">Reflex hook → Jev</span>Ask eight quality questions</li>
+      <li><span class="route">Jev → Reflex hook</span>Return probabilities for each problem</li>
+      <li class="branch">If any probability is above 0.50:</li>
+      <li><span class="route">Reflex hook → Codex</span>Block completion and provide findings</li>
+      <li><span class="route">Codex → Codex</span>Repair code and rerun tests</li>
+      <li><span class="route">Codex → Reflex hook</span>Attempt to finish again</li>
+      <li><span class="route">Reflex hook → Jev</span>Review the repaired diff</li>
+      <li><span class="route">Jev → Reflex hook</span>No actionable findings</li>
+      <li><span class="route">Reflex hook → Codex</span>Allow completion</li>
+      <li class="branch">If no probability is above 0.50, Reflex allows the first completion.</li>
+    </ol>
+  </div>
+
+  <p>Here is exactly how the five steps divide between Codex, Reflex and Jev.</p>
+
+  <h3 class="subhead">1. Reflex collects evidence</h3>
+  <p>When you submit the task, the <code>UserPromptSubmit</code> hook records:</p>
+  <ul>
+    <li>your original request;</li>
+    <li>the current Git commit;</li>
+    <li>the initial repository status.</li>
+  </ul>
+  <p>Whenever Codex runs a recognized test command, <code>PostToolUse</code> records the command and its output.</p>
+  <p>When Codex tries to finish, the <code>Stop</code> hook runs:</p>
+  <pre><code>node --env-file=.env hooks/coding-reflex.mjs --hook</code></pre>
+  <p>This wiring is in <a href="https://github.com/az9713/jev-projects/blob/main/.codex/hooks.json"><code>.codex/hooks.json</code></a>.</p>
+
+  <h3 class="subhead">2. This is the exact point where Jev enters</h3>
+  <p>The Stop hook calls:</p>
+  <pre><code>verifyWithQuestions(diff, QUESTIONS, {
+  user_request: state.prompt,
+  test_evidence: state.tests,
+  initial_worktree_status: state.initialStatus
+});</code></pre>
+  <p>That happens in <a href="https://github.com/az9713/jev-projects/blob/main/hooks/coding-reflex.mjs"><code>hooks/coding-reflex.mjs</code></a>.</p>
+  <p><code>verifyWithQuestions</code> then calls the shared <code>ask()</code> function. Inside <code>ask()</code>, the selected model is explicitly:</p>
+  <pre><code>export const JEV = "typesafe-ai/jev";</code></pre>
+  <p>The actual remote model invocation is:</p>
+  <pre><code>evaluate({
+  model: JEV,
+  state,
+  questions
+});</code></pre>
+  <p>See <a href="https://github.com/az9713/jev-projects/blob/main/lib.mjs"><code>lib.mjs</code></a>.</p>
+  <p>Therefore, Jev receives structured evidence resembling:</p>
+  <pre><code>{
+  user_request: "Create a trailing-whitespace utility...",
+  git_diff: "all files Codex added or changed",
+  test_evidence: [
+    {
+      command: "node --test reflex-demo/test.mjs",
+      response: "3 tests passed"
+    }
+  ],
+  initial_worktree_status: "clean"
+}</code></pre>
+
+  <h3 class="subhead">3. Jev makes decisions</h3>
+  <p>Jev is asked eight binary questions, including:</p>
+  <pre><code>behavior_untested:
+Does the diff add or change executable behavior without adding or
+updating a direct test for that behavior?</code></pre>
+  <p>The questions are defined in <a href="https://github.com/az9713/jev-projects/blob/main/hooks/coding-reflex-questions.json"><code>hooks/coding-reflex-questions.json</code></a>.</p>
+  <p>Jev returns probabilities, conceptually:</p>
+  <pre><code>{
+  "task_incomplete": 0.78,
+  "behavior_untested": 0.86,
+  "test_weakened": 0.03,
+  "secret": 0.01,
+  "errors_swallowed": 0.04,
+  "placeholder": 0.02,
+  "injection": 0.01,
+  "unrelated": 0.03
+}</code></pre>
+  <p>Any probability above <code>0.50</code> becomes a finding.</p>
+  <p>Jev is therefore the component that decides:</p>
+  <div class="callout"><strong>“Executable behavior was added, but the requested behavior has no direct test.”</strong></div>
+  <p>It does not write the explanation freely. It answers predefined quality questions probabilistically and very quickly.</p>
+
+  <h3 class="subhead">4. Reflex returns Jev’s decision to Codex</h3>
+  <p>If Jev finds a problem, the hook returns:</p>
+  <pre><code>{
+  decision: "block",
+  reason: "Jev Coding Reflex found 1 issue...
+           behavior_untested (p 0.86)..."
+}</code></pre>
+  <p>That line is the control mechanism. <code>decision: "block"</code> tells the Codex runtime:</p>
+  <div class="callout"><strong>Do not end this task. Give this finding back to the coding agent.</strong></div>
+  <p>This is why Codex resumes automatically.</p>
+
+  <h3 class="subhead">5. Codex performs the repair</h3>
+  <p>Codex reads Jev’s finding, examines its work, adds the missing test and runs it.</p>
+  <p>This part is performed by <strong>Codex</strong>, not Jev.</p>
+  <p>When Codex tries to finish again, the Stop hook invokes Jev a second time. Jev now sees the updated diff and test evidence. If every probability is below <code>0.50</code>, Reflex returns only:</p>
+  <pre><code>Jev Coding Reflex: no actionable findings</code></pre>
+  <p>Codex is then allowed to finish.</p>
+  <p>So the ownership is:</p>
+  <table>
+    <thead><tr><th>Action</th><th>Component</th></tr></thead>
+    <tbody>
+      <tr><td>Write and modify code</td><td>Codex</td></tr>
+      <tr><td>Run tests</td><td>Codex</td></tr>
+      <tr><td>Capture request, diff and test output</td><td>Reflex hook</td></tr>
+      <tr><td>Assess eight failure conditions</td><td>Jev</td></tr>
+      <tr><td>Block completion</td><td>Reflex hook using Jev’s result</td></tr>
+      <tr><td>Repair the detected problem</td><td>Codex</td></tr>
+      <tr><td>Review the repaired result</td><td>Jev</td></tr>
+    </tbody>
+  </table>
+  <p>You do not see a separate Jev window because Jev is operating as a <strong>hidden, low-latency decision model inside the Codex lifecycle</strong>. During the video, the visible evidence of Jev is the message:</p>
+  <pre><code>Jev Coding Reflex found 1 issue...
+behavior_untested (p 0.xx)</code></pre>
+  <p>That is the moment Jev has prevented Codex from finishing and triggered the repair cycle.</p>
 </section>
 
 <section id="inputs">
