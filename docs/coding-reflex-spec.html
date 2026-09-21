@@ -153,7 +153,7 @@
   <h3 class="subhead">Where Jev comes into play</h3>
   <p><strong>The key point is: Jev participates only when Codex tries to finish.</strong> It does not write code or run tests. It acts as a fast external reviewer inside the <code>Stop</code> hook.</p>
 
-  <figure class="sequence-diagram">
+  <figure class="sequence-diagram" id="communication-diagram">
     <img src="images/jev-coding-reflex-sequence.png" alt="Sequence diagram with lifelines for You, Codex, the Reflex hook and the Jev model. Codex sends its completion attempt to the Reflex hook, which asks Jev eight quality questions. A finding blocks completion and returns Codex to repair and retest; a clean result allows completion.">
     <figcaption>Communication sequence: Jev is called by the Reflex Stop hook, and the hook either returns findings to Codex or allows completion.</figcaption>
   </figure>
