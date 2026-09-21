@@ -24,38 +24,21 @@
   th { background:var(--card); color:var(--text); }
   .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
   .warn { border-left-color:var(--err); }
-  .feature { display:grid; grid-template-columns:minmax(280px,1.2fr) minmax(280px,1fr); gap:18px; background:linear-gradient(145deg,#1d2a20,var(--card)); border:1px solid var(--border); border-radius:12px; padding:18px; margin:22px 0 30px; }
-  .feature img { display:block; width:100%; border-radius:8px; }
-  .feature h2 { margin-top:0; }
-  .metrics { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:14px 0; }
-  .metric { background:#111827; border-radius:7px; padding:9px; color:var(--muted); font-size:12px; }
-  .metric b { display:block; color:#a3e635; font-size:20px; }
-  @media(max-width:760px){.feature{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
 <h1>Jev projects</h1>
-<nav><a href="journey.html">Development journey</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="windows-feasibility.html">Windows feasibility</a><a href="coding-reflex-spec.html">Coding Reflex description</a><a href="coding-reflex-video.html">Coding Reflex video</a><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="doom/doom.html">doom replay</a><a href="doom/video.html">doom video</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<nav><a href="journey.html">Development journey</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="windows-feasibility.html">Windows feasibility</a><a href="coding-reflex-spec.html">Coding Reflex description</a><a href="coding-reflex-video.html">Coding Reflex video</a><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
 <p class="meta">
-  <b>Updated:</b> 2026-09-20 &nbsp;·&nbsp; <b>Repo:</b> <a href="https://github.com/az9713/jev-projects">github.com/az9713/jev-projects</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway, <code>ai</code> 7.0.107, Node 22<br>
+  <b>Updated:</b> 2026-09-21 &nbsp;·&nbsp; <b>Repo:</b> <a href="https://github.com/az9713/jev-projects">github.com/az9713/jev-projects</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway, <code>ai</code> 7.0.107, Node 22<br>
   <b>Predecessors:</b> <a href="https://az9713.github.io/jev-model-router/">the model-router journey</a> and <a href="https://az9713.github.io/jev-email-triage/">the email-triage journey</a>.
 </p>
 
-<div class="callout">Every page in this repo puts measured latency on screen. Typical calls on this machine land in roughly 200 to 1,200 ms, with slower outliers during gateway congestion. Doom Level 3's 50-seed final evaluation had a 260 ms median episode mean and 346 ms median episode p95. A demo that hides this number is a demo of the animation, not of Jev.</div>
-
-<section class="feature">
-  <a href="doom/video.html"><img src="video/jev_doom_level3.jpg" alt="Jev chooses shoot in ViZDoom Level 3 in 231 milliseconds with probability 0.96"></a>
-  <div>
-    <h2>Featured: Jev plays ViZDoom</h2>
-    <p>Aim, survive, handle pressure, then combine combat with navigation. The new Level 3 page pairs a 24-second video with the recorded action, probability, tactical reason and response time.</p>
-    <div class="metrics"><div class="metric"><b>41/50</b>held-out goals reached</div><div class="metric"><b>260 ms</b>median episode mean</div><div class="metric"><b>346 ms</b>median episode p95</div><div class="metric"><b>0</b>final-run fallbacks</div></div>
-    <p><a href="doom/video.html"><b>Watch the video and inspect the decisions →</b></a><br><a href="doom/doom.html">Open the interactive replay</a> · <a href="https://github.com/az9713/jev-projects/tree/main/doom">Read the case study</a></p>
-  </div>
-</section>
+<div class="callout">Every page in this repo puts measured latency on screen. Typical calls on this machine land in roughly 200 to 1,200 ms, with slower outliers during gateway congestion. A demo that hides this number is a demo of the animation, not of Jev.</div>
 
 <h2>What was built: one page per project</h2>
-<p>Ten pieces. Nine use Node directly; Doom uses Python for ViZDoom and a tiny Node worker so it shares the same Jev evaluator. Seven visual projects have an HTML page that polls <code>/state</code> and draws. This site replays measured runs because GitHub Pages cannot hold a gateway key or run the local servers.</p>
+<p>Ten pieces use Node directly. Six visual projects have an HTML page that polls <code>/state</code> and draws. This site replays measured runs because GitHub Pages cannot hold a gateway key or run the local servers.</p>
 <table>
 <tr><th>Project</th><th>What Jev decides</th><th>Loop</th><th>Check result</th></tr>
 <tr><td><a href="probe-burst.html"><code>probe-burst.mjs</code></a></td><td>Nothing; 50 boolean calls fired at once</td><td>one burst</td><td>48/50 ok, burst 7.8 s, per call min 1,079, median 1,230, max 7,739 ms (the max is the SDK's three retries on a 503)</td></tr>
@@ -65,7 +48,6 @@
 <tr><td><a href="sort.html"><code>sort/</code></a></td><td>Which of five queues a customer message goes to</td><td>20 calls in flight</td><td>303 labelled messages in 13.8 s, 21.9 items/s, 93.7% agreement with the labels, $0.006</td></tr>
 <tr><td><a href="logs.html"><code>logs/</code></a></td><td>Severity 0 to 3, page-the-on-call boolean, subsystem, per log line with three lines of context</td><td>streamed, 10 in flight</td><td>2,020 lines in 119 s (second run: 573 s, see below), $0.05. Routine max 1.37, incident min 1.47: no overlap. Page boolean fired on 18/20 incidents and 3 routine lines, both runs</td></tr>
 <tr><td><a href="lane.html"><code>lane/</code></a></td><td>Forward, ease left, ease right, brake, or stop, once per tick</td><td>ticked, 1,000 ms</td><td>5 runs of 60 ticks: Jev 13 collisions, forward-only 20, rule-based 0. Spec target (fewer than 3) not met</td></tr>
-<tr><td><a href="doom/doom.html"><code>doom/</code></a></td><td>Aim, defend, and navigate a combat corridor, each with harder pressure modes</td><td>2 to 12 game tics per decision</td><td>Level 2: Jev survived 50/50 final seeds. Level 3: the rule baseline reached the goal on 88/100; Jev reached it on 9/10 development, 16/20 validation and 41/50 final seeds. Final median 6 kills, zero fallbacks, $0.00179 mean cost and 346 ms median p95 latency. Corridor pressure: 8/10.</td></tr>
 <tr><td><a href="skill-router.html"><code>hooks/skill-router.mjs</code></a></td><td>Which of 147 Claude Code skills fits the prompt, or none</td><td>one call per prompt</td><td>6/6 test prompts matched; 9,920 input tokens, 408 to 6,926 ms, $0.0004 per prompt. A first run saw only 100 skills: 48 skill folders are links and <code>readdir</code> dirents report them as non-directories; fixed with <code>stat</code></td></tr>
 <tr><td><a href="verify.html"><code>hooks/verify.mjs</code></a></td><td>Twelve questions about a git diff in one call</td><td>one call per diff</td><td>On a synthetic diff: secret 0.99, test_weakened 0.99, debug_left 0.98, unrelated 0.88; risk 2.99 of 3; 340 ms, $0.00003</td></tr>
 <tr><td><a href="coding-reflex-spec.html"><code>hooks/coding-reflex.mjs</code></a><br><a href="coding-reflex-video.html">Watch the Codex session</a></td><td>Whether a Codex task is incomplete, untested, unsafe or out of scope</td><td>one Jev call when Codex stops</td><td>Controlled omission: first Stop flagged behavior_untested 0.83 and task_incomplete 0.80 in 1,188 ms; Codex added the direct test; second Stop was clean in 738 ms. Total Jev cost: $0.000198.</td></tr>
@@ -85,7 +67,6 @@
   <li><b>Investigate is the town's default.</b> Both "Free bread at the bakery" and "A wolf is at the gate" got investigate as the modal action (36 and 29 of 50). The spread is in the tails: the wolf got 18 warn and 3 flee, the bread 7 join and 3 warn. The check asserts the tails, since the modal test from the spec cannot pass.</li>
   <li><b>The severity scale is compressed.</b> Only 12 of 20 injected incidents scored above the spec's 2.0 line on the 0 to 3 scale. But no routine line scored above 1.37 and no incident below 1.47, so the sets separate completely at 1.4. The page-the-on-call boolean is the sharper signal: 18 of 20 incidents above 0.5, 3 of 2,000 routine lines above it.</li>
   <li><b>Jev drives badly from text.</b> Without arithmetic help it collided 29 times in 5 runs of the fixed 60-tick script (17 obstacles). Adding a precomputed <code>ticks_to_impact</code> per obstacle cut that to 13 to 16. A driver that only goes forward: 20. A rule-based driver with the same information: 0. The check now asserts that Jev beats the forward-only driver.</li>
-  <li><b>Jev now clears Doom Level 3 on 82% of held-out seeds.</b> Target locking stopped two enemies from causing left-right oscillation; goal bearing and stuck detection enabled navigation; action masking prevented off-axis shooting. The rule controller reached the armor on 88/100 seeds and Jev on 41/50 final seeds. The tighter two-target-observation corridor remained solvable on 8/10 seeds.</li>
   <li><b>The gateway has slow hours.</b> The same 2,020-line check took 119 s at about 10:00 local time and 573 s at about 10:30, with 0 failed calls both times and the same separation (routine max 1.38, incident min 1.49). One lane run in that window averaged 8,567 ms per decision against 254 to 568 ms in the others. The 503 retries at 3, 6, 12, and 24 s in <code>lib.mjs</code> kept every answer and paid in wall time. A page that shows latency per call shows this; a page that shows only the animation would not.</li>
   <li><b>Sort accuracy is a rubric question.</b> 88.1% → 87.5% → 93.7% across three rubric versions with Jev unchanged. The remaining misses sit between sales, billing, and other, where the labels (written once by <code>anthropic/claude-sonnet-5</code>) are themselves one opinion.</li>
   <li><b>Chess: no illegal moves, no losses to random.</b> The options are the legal moves, so the schema does the legality. Five checkmates and five draws; two draws were the 200-ply cap.</li>

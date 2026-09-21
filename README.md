@@ -4,14 +4,6 @@ Small demos of [Jev](https://docs.typesafe.ai/introduction), TypeSafe's decision
 
 The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad, Witsam, and Nate Herk). Two earlier ones live in their own repos: the [model router](https://github.com/az9713/jev-model-router) and the [email triage](https://github.com/az9713/jev-email-triage).
 
-## Featured: Jev plays ViZDoom
-
-[![Jev completes ViZDoom Level 3 while its decisions, probabilities and latency are shown](docs/video/jev_doom_level3.jpg)](https://az9713.github.io/jev-projects/doom/video.html)
-
-**Aim → survive → handle pressure → navigate → navigate under pressure.** Jev progressed from a one-target trainer to a combat corridor where it must kill enemies, preserve health and ammunition, and reach the armor objective. On 50 held-out Level 3 seeds it reached the goal **41 times**, with a **260 ms** median episode-mean decision latency, **346 ms** median episode p95, **zero fallbacks**, and **$0.00179** mean cost per run.
-
-[Watch the Level 3 video and decision trace](https://az9713.github.io/jev-projects/doom/video.html) · [Open the interactive replay](https://az9713.github.io/jev-projects/doom/doom.html) · [Read the case study](doom/README.md) · [Inspect all Level 3 seeds](doom/corridor-evaluation.json)
-
 - **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
 - **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
 - **Windows feasibility:** https://az9713.github.io/jev-projects/windows-feasibility.html — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
@@ -19,7 +11,7 @@ The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad,
 
 ## The one rule
 
-Every page puts measured latency on screen. Compact successful choices in these recorded runs commonly took about 235 to 465 ms; Doom Level 3's 50-seed final evaluation had a 260 ms median episode mean and a 346 ms median episode p95. Bursts, very large option sets and gateway retries produced one- to multi-second tails. A demo that hides those numbers is a demo of the animation, not of Jev.
+Every page puts measured latency on screen. Compact successful choices in these recorded runs commonly took about 235 to 465 ms. Bursts, very large option sets and gateway retries produced one- to multi-second tails. A demo that hides those numbers is a demo of the animation, not of Jev.
 
 ## Projects
 
@@ -32,21 +24,20 @@ Every page puts measured latency on screen. Compact successful choices in these 
 | `sort/` | [sort at scale](https://az9713.github.io/jev-projects/sort/sort.html) | 3004 | Which of five queues a customer message belongs in, 20 calls in flight | 303 items in 13.8 s, 21.9 items/s, 93.7% agreement with the labels |
 | `logs/` | [log monitor](https://az9713.github.io/jev-projects/logs/logs.html) | 3005 | Severity 0 to 3, page-the-on-call boolean, and subsystem, per log line | 20 incidents in 2,020 lines: no overlap with routine lines; page fired on 18/20 |
 | `lane/` | [lane sim](https://az9713.github.io/jev-projects/lane/lane.html) | 3006 | Forward, ease left, ease right, brake, or stop, once per 1 s tick | 5 runs: Jev 13 collisions, forward-only 20, rules 0. Spec target (< 3) not met |
-| `doom/` | [ViZDoom stress suite](https://az9713.github.io/jev-projects/doom/doom.html) | 3007 | Aim, defend, and navigate a combat corridor, each with harder pressure modes | Level 2: 50/50 final survival. Level 3: 41/50 reached the armor with median 6 kills, zero fallbacks and $0.00179 mean cost; corridor pressure: 8/10 |
 | `hooks/skill-router.mjs` | – | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
 | `hooks/coding-reflex.mjs` | [Codex specification and measured run](https://az9713.github.io/jev-projects/coding-reflex-spec.html) | – | Compare the user's task, Git diff and test evidence when Codex tries to finish | Controlled omission: first Stop flagged untested behavior 0.83 and incomplete task 0.80 in 1,188 ms; Codex added the test; second Stop was clean in 738 ms; $0.000198 total |
 
 ### Folder rule
 
-- Each implemented application gets one top-level folder such as `doom/` or `minecraft/`; future projects do not get empty scaffolding.
+- Each implemented application gets one top-level folder such as `wiki/` or `minecraft/`; future projects do not get empty scaffolding.
 - A visual application's publishable replay mirrors that folder under `docs/<name>/`.
 - Shared Jev calls, retries, timing, and cost stay in `lib.mjs`. A project adds a language bridge only when its runtime requires one.
-- Local runtimes such as `doom/.venv/` and credentials remain ignored; source, pinned dependencies, checks, and measured replays are committed.
+- Local runtimes such as `.venv/` and credentials remain ignored; source, pinned dependencies, checks, and measured replays are committed.
 
 ### Videos
 
-Screen recordings of six projects, from short application replays to the complete 4:16 Coding Reflex session. Click a picture to play the video or open its dedicated watch page.
+Screen recordings of five projects, from short application replays to the complete 4:16 Coding Reflex session. Click a picture to play the video or open its dedicated watch page.
 
 <table>
 <tr>
@@ -56,9 +47,6 @@ Screen recordings of six projects, from short application replays to the complet
 <tr>
 <td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_chess.mp4"><img src="docs/video/jev_chess.jpg" alt="Bullet chess: Jev as white against a random mover" width="100%"></a><br><b>Bullet chess</b>, 12 s: Jev as white against a random mover</td>
 <td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_sort.mp4"><img src="docs/video/jev_sort.jpg" alt="Sort at scale: 1000 messages into five queues" width="100%"></a><br><b>Sort at scale</b>, 18 s: 1000 messages into five queues</td>
-</tr>
-<tr>
-<td colspan="2"><a href="https://az9713.github.io/jev-projects/doom/video.html"><img src="docs/video/jev_doom_level3.jpg" alt="Jev completes ViZDoom Level 3 with live decisions, probabilities, latency and cost" width="100%"></a><br><b>ViZDoom Level 3</b>, 24 s: six kills, 52 health, 76 decisions, 261 ms mean decision latency and no fallback. The linked GitHub Page includes the video, full performance explanation and 73 captured decision snapshots.</td>
 </tr>
 <tr>
 <td colspan="2"><a href="https://az9713.github.io/jev-projects/coding-reflex-video.html"><img src="docs/video/jev-coding-reflex-demo.jpg" alt="Codex is blocked after Jev detects an untested behavior and incomplete task" width="100%"></a><br><b>Jev Coding Reflex</b>, 4 min 16 s: a real persistent Codex session in which Jev returns two findings in 988 ms, Codex adds the missing behavior test, and the second Jev review is clean in 581 ms. Click the screenshot to watch the compressed video on GitHub Pages.</td>
@@ -80,7 +68,6 @@ Captured on 2026-09-19 for the [development journey](https://az9713.github.io/je
 | sort | items.json[0] | billing | 1.00 | 235 ms | $0.0000193 |
 | logs | "connection pool exhausted" | severity 2.02, page 0.81, db | 0.96, 1.00 | 2,480 ms | $0.0000248 |
 | lane | cone 3 lengths ahead, speed 2 | ease_right, danger 2.6 | 0.47, 0.60 | 300 ms | $0.0000276 |
-| Doom Level 3 | Zombieman right, 62 px off crosshair | turn_right | 0.85 | 465 ms | $0.0000269 |
 | skill-router | "wrap up my day", 147 skills | end-of-day-wrapup | 1.00 | 12,435 ms | $0.000417 |
 | verify | the synthetic diff | secret 0.99, test_weakened 0.99, debug_left 0.98 | risk 1.00 | 336 ms | $0.0000345 |
 
@@ -94,14 +81,6 @@ echo AI_GATEWAY_API_KEY=your_key > .env
 node --env-file=.env wiki/wiki.mjs          # http://localhost:3001, same shape for town, chess, sort, logs, lane
 node --env-file=.env chess/chess.mjs --check   # every project has a --check that asserts its proof condition
 node --env-file=.env probe-burst.mjs 50
-py -3.13 -m venv doom/.venv
-doom/.venv/Scripts/python -m pip install -r doom/requirements.txt
-doom/.venv/Scripts/python doom/doom.py --check  # free ViZDoom rules-vs-random check
-doom/.venv/Scripts/python doom/doom.py          # http://localhost:3007
-doom/.venv/Scripts/python doom/doom.py --run jev --scenario defend --episodes 1 --headless
-doom/.venv/Scripts/python doom/doom.py --run rules --scenario defend --episodes 100 --seed 1000 --headless
-doom/.venv/Scripts/python doom/benchmark.py  # development, validation, final and pressure gates
-doom/.venv/Scripts/python doom/benchmark.py corridor
 ```
 
 `town/town.json` and `sort/items.json` were written once by `anthropic/claude-sonnet-5` (`--gen`) and are committed, so runs are reproducible.
@@ -131,7 +110,7 @@ doom/.venv/Scripts/python doom/benchmark.py corridor
 
 ## Not built, and why
 
-- Doom is now implemented with ViZDoom and its bundled Freedoom assets. Minecraft is confirmed buildable: this machine has Node 22, Java 23, Python 3.13, WSL 2, 31.7 GiB RAM, and enough disk. Melee is conditional on a legally obtained NTSC 1.02 game image and Slippi setup. A full CARLA driving replica is unsuitable here because the RTX 3050 Laptop GPU has 4 GiB VRAM; CARLA documents 6 GiB as a minimum and recommends 8 GiB. See the [Windows feasibility report](https://az9713.github.io/jev-projects/windows-feasibility.html).
+- Minecraft is confirmed buildable: this machine has Node 22, Java 23, Python 3.13, WSL 2, 31.7 GiB RAM, and enough disk. Melee is conditional on a legally obtained NTSC 1.02 game image and Slippi setup. A full CARLA driving replica is unsuitable here because the RTX 3050 Laptop GPU has 4 GiB VRAM; CARLA documents 6 GiB as a minimum and recommends 8 GiB. See the [Windows feasibility report](https://az9713.github.io/jev-projects/windows-feasibility.html).
 - Live versions of the X-feed classifier, YouTube/community routing, meetings, contracts, job/lead screening, brain-dump routing, customer support, and Sentry need the relevant account or private input stream. Their decision pipelines can all be built and evaluated locally with fixtures first.
 - Real-money trading is deliberately excluded. A replay or paper-trading experiment is feasible, but neither video establishes predictive value, and the decision model should be evaluated for calibration before any execution layer exists.
 - The wiki "race" lane against a chat model: not built. Chess against a chat model: wired (type a gateway model id in the page's opponent field, 10 s budget per move) but not measured.

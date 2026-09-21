@@ -46,7 +46,6 @@
       <thead><tr><th>Project from videos</th><th>Verdict</th><th>Why</th><th>Faithful local scope</th></tr></thead>
       <tbody>
         <tr><td>Minecraft: frontier planner + Jev actor</td><td class="verdict yes">Yes</td><td>Node and Java are installed; Mineflayer supports a local/offline server and browser viewer.</td><td>One local world, text state, bounded actions, browser view, recorded planner handoffs. No Minecraft purchase is required for a bot-only offline server.</td></tr>
-        <tr><td>Doom in real time</td><td class="verdict yes">Implemented</td><td>ViZDoom 1.3.0 runs on Python 3.13 with its bundled Freedoom assets. The measured three-level suite is in <a href="doom/doom.html">doom/</a>.</td><td>Aim training, multi-attacker defense, and corridor navigation now expose increasingly large action spaces. The first two harder trials defeated Jev; asynchronous reflex control remains a later experiment.</td></tr>
         <tr><td>Super Smash Bros. Melee</td><td class="verdict conditional">Conditional</td><td>Windows and the hardware are adequate. Slippi, current libmelee, and an NTSC-U/J 1.02 game image are required; none was found locally.</td><td>High-level tactics at a low cadence over frame state. Frame-perfect Jev control is incompatible with network model latency. A legally obtained game image is a hard prerequisite.</td></tr>
         <tr><td>Tesla-style driving in CARLA</td><td class="verdict no">No, as shown</td><td>CARLA's documented minimum is 6 GiB VRAM; this GPU has 4 GiB. Source builds also need about 170 GB free, more than the current 156.8 GB.</td><td>Keep the existing lane simulator, or run CARLA on a larger GPU machine and send only compact state to Jev.</td></tr>
         <tr><td>Flight-search browser agent</td><td class="verdict yes">Yes, bounded</td><td>Playwright supports Windows 11 and Node 22. Dynamic travel sites and bot defenses make a general agent unreliable.</td><td>One named site or a controlled travel fixture, visible browser, fixed search task, trace and screenshot evidence.</td></tr>
@@ -71,12 +70,11 @@
     <h2>Recommended next build order</h2>
     <p>The order maximizes new evidence about Jev instead of adding more variants of text classification already demonstrated by email triage, sort, logs, and routing.</p>
     <div class="cards">
-      <article class="card"><span class="rank">1 · Doom · completed</span><h3>Three levels measured</h3><p>The suite progresses from aiming to multi-attacker defense and corridor combat. It compares Jev, deterministic rules, and random control while recording game state, latency, cost, and failures.</p></article>
-      <article class="card"><span class="rank">2 · Minecraft</span><h3>Best hierarchical-agent test</h3><p>It tests Astra planning, Jev action selection, recovery from failed actions, long-horizon state, and a visually inspectable world.</p></article>
-      <article class="card"><span class="rank">3 · X attention filter</span><h3>Best product demonstration</h3><p>It makes low-latency classification visible in a real interface. Build and test first against saved post fixtures; attach to a live feed only after the classifier is credible.</p></article>
-      <article class="card"><span class="rank">4 · Brain-dump router</span><h3>Best personal utility</h3><p>It turns spoken or pasted thoughts into structured destinations. The first version needs only text input and a local JSON export.</p></article>
+      <article class="card"><span class="rank">1 · Minecraft</span><h3>Best hierarchical-agent test</h3><p>It tests Astra planning, Jev action selection, recovery from failed actions, long-horizon state, and a visually inspectable world.</p></article>
+      <article class="card"><span class="rank">2 · X attention filter</span><h3>Best product demonstration</h3><p>It makes low-latency classification visible in a real interface. Build and test first against saved post fixtures; attach to a live feed only after the classifier is credible.</p></article>
+      <article class="card"><span class="rank">3 · Brain-dump router</span><h3>Best personal utility</h3><p>It turns spoken or pasted thoughts into structured destinations. The first version needs only text input and a local JSON export.</p></article>
     </div>
-    <aside class="callout"><h3>Decision</h3><p>Doom is now built and measured. Minecraft is the next new project because it tests long-horizon planning and Jev action selection in a persistent world. CARLA and real-money trading should not be started on this machine.</p></aside>
+    <aside class="callout"><h3>Decision</h3><p>Minecraft is the next new project because it tests long-horizon planning and Jev action selection in a persistent world. CARLA and real-money trading should not be started on this machine.</p></aside>
   </section>
 
   <section id="sources">
@@ -84,7 +82,6 @@
     <p>The project inventory comes from the four saved transcripts in <code>jev_collection</code>. Machine facts come from local commands. Software claims below link to primary documentation. Build estimates and the recommended order are engineering judgments.</p>
     <ul class="sources">
       <li><a href="https://github.com/PrismarineJS/mineflayer">Mineflayer</a>: Node 18+, offline authentication option, supported Minecraft versions, and game-state/action APIs.</li>
-      <li><a href="https://vizdoom.farama.org/introduction/python_quickstart/">ViZDoom Windows quick start</a>: Windows x64 wheels for Python 3.9+ and the limits of the Windows build.</li>
       <li><a href="https://github.com/altf4/libmelee">libmelee</a> and <a href="https://github.com/project-slippi/slippi-launcher/blob/main/FAQ.md">Slippi FAQ</a>: Windows setup, game-state access, controller interface, and supported NTSC 1.02 image.</li>
       <li><a href="https://carla.readthedocs.io/en/latest/start_quickstart/">CARLA quick start</a> and <a href="https://carla.readthedocs.io/en/latest/build_faq/">CARLA build FAQ</a>: Windows support, GPU memory, disk, and Python requirements.</li>
       <li><a href="https://playwright.dev/docs/intro">Playwright installation</a>: Windows 11 and Node 22 support.</li>
