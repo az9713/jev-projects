@@ -4,6 +4,14 @@ Small demos of [Jev](https://docs.typesafe.ai/introduction), TypeSafe's decision
 
 The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad, Witsam, and Nate Herk). Two earlier ones live in their own repos: the [model router](https://github.com/az9713/jev-model-router) and the [email triage](https://github.com/az9713/jev-email-triage).
 
+## Featured: Jev plays ViZDoom
+
+[![Jev completes ViZDoom Level 3 while its decisions, probabilities and latency are shown](docs/video/jev_doom_level3.jpg)](https://az9713.github.io/jev-projects/doom/video.html)
+
+**Aim → survive → handle pressure → navigate → navigate under pressure.** Jev progressed from a one-target trainer to a combat corridor where it must kill enemies, preserve health and ammunition, and reach the armor objective. On 50 held-out Level 3 seeds it reached the goal **41 times**, with a **260 ms** median episode-mean decision latency, **346 ms** median episode p95, **zero fallbacks**, and **$0.00179** mean cost per run.
+
+[Watch the Level 3 video and decision trace](https://az9713.github.io/jev-projects/doom/video.html) · [Open the interactive replay](https://az9713.github.io/jev-projects/doom/doom.html) · [Read the case study](doom/README.md) · [Inspect all Level 3 seeds](doom/corridor-evaluation.json)
+
 - **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
 - **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
 - **Windows feasibility:** https://az9713.github.io/jev-projects/windows-feasibility.html — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
@@ -36,7 +44,7 @@ Every page puts the measured latency on screen. The videos show demos from machi
 
 ### Videos
 
-Screen recordings of four pages, 5 to 18 s each, silent. Click a picture to play the video.
+Screen recordings of five pages, 5 to 27 s each, silent. Click a picture to play the video or its dedicated watch page.
 
 <table>
 <tr>
@@ -47,9 +55,12 @@ Screen recordings of four pages, 5 to 18 s each, silent. Click a picture to play
 <td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_chess.mp4"><img src="docs/video/jev_chess.jpg" alt="Bullet chess: Jev as white against a random mover" width="100%"></a><br><b>Bullet chess</b>, 12 s: Jev as white against a random mover</td>
 <td width="50%"><a href="https://az9713.github.io/jev-projects/video/jev_sort.mp4"><img src="docs/video/jev_sort.jpg" alt="Sort at scale: 1000 messages into five queues" width="100%"></a><br><b>Sort at scale</b>, 18 s: 1000 messages into five queues</td>
 </tr>
+<tr>
+<td colspan="2"><a href="https://az9713.github.io/jev-projects/doom/video.html"><img src="docs/video/jev_doom_level3.jpg" alt="Jev completes ViZDoom Level 3 with live decisions, probabilities, latency and cost" width="100%"></a><br><b>ViZDoom Level 3</b>, 24 s: six kills, 52 health, 76 decisions, 261 ms mean decision latency and no fallback. The linked GitHub Page includes the video, full performance explanation and 73 captured decision snapshots.</td>
+</tr>
 </table>
 
-The **Page** links open each project's own HTML on GitHub Pages. Pages has no Node server and no gateway key, so each page there replays one real run recorded on 2026-09-19: the same page, fed the `/state` frames that were recorded, with Jev's real answers, timings, and cost. The button restarts the replay. `node record.mjs [name]` records a fresh run into `docs/<name>/<name>.html`.
+The **Page** links open each project's own HTML on GitHub Pages. Pages has no Node server and no gateway key, so each page there replays one real run recorded on 2026-09-19 or 2026-09-20: the same page, fed the `/state` frames that were recorded, with Jev's real answers, timings, and cost. The button restarts the replay. `node record.mjs [name]` records a fresh run into `docs/<name>/<name>.html`.
 
 ## One real call per project
 
@@ -64,6 +75,7 @@ Captured on 2026-09-19 for the [development journey](https://az9713.github.io/je
 | sort | items.json[0] | billing | 1.00 | 235 ms | $0.0000193 |
 | logs | "connection pool exhausted" | severity 2.02, page 0.81, db | 0.96, 1.00 | 2,480 ms | $0.0000248 |
 | lane | cone 3 lengths ahead, speed 2 | ease_right, danger 2.6 | 0.47, 0.60 | 300 ms | $0.0000276 |
+| Doom Level 3 | Zombieman right, 62 px off crosshair | turn_right | 0.85 | 465 ms | $0.0000269 |
 | skill-router | "wrap up my day", 147 skills | end-of-day-wrapup | 1.00 | 12,435 ms | $0.000417 |
 | verify | the synthetic diff | secret 0.99, test_weakened 0.99, debug_left 0.98 | risk 1.00 | 336 ms | $0.0000345 |
 

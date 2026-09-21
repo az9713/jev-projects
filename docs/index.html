@@ -24,18 +24,35 @@
   th { background:var(--card); color:var(--text); }
   .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
   .warn { border-left-color:var(--err); }
+  .feature { display:grid; grid-template-columns:minmax(280px,1.2fr) minmax(280px,1fr); gap:18px; background:linear-gradient(145deg,#1d2a20,var(--card)); border:1px solid var(--border); border-radius:12px; padding:18px; margin:22px 0 30px; }
+  .feature img { display:block; width:100%; border-radius:8px; }
+  .feature h2 { margin-top:0; }
+  .metrics { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:14px 0; }
+  .metric { background:#111827; border-radius:7px; padding:9px; color:var(--muted); font-size:12px; }
+  .metric b { display:block; color:#a3e635; font-size:20px; }
+  @media(max-width:760px){.feature{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
 <h1>Jev projects</h1>
-<nav><a href="journey.html">Development journey</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="windows-feasibility.html">Windows feasibility</a><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="doom/doom.html">doom</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
+<nav><a href="journey.html">Development journey</a><a href="reliability-upgrade.html">Reliability upgrade</a><a href="windows-feasibility.html">Windows feasibility</a><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="doom/doom.html">doom replay</a><a href="doom/video.html">doom video</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a></nav>
 <p class="meta">
-  <b>Date:</b> 2026-09-19 &nbsp;·&nbsp; <b>Repo:</b> <a href="https://github.com/az9713/jev-projects">github.com/az9713/jev-projects</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway, <code>ai</code> 7.0.107, Node 22 &nbsp;·&nbsp; <b>Built with:</b> Claude Code, model Fable 5.1, in one session<br>
+  <b>Updated:</b> 2026-09-20 &nbsp;·&nbsp; <b>Repo:</b> <a href="https://github.com/az9713/jev-projects">github.com/az9713/jev-projects</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway, <code>ai</code> 7.0.107, Node 22<br>
   <b>Predecessors:</b> <a href="https://az9713.github.io/jev-model-router/">the model-router journey</a> and <a href="https://az9713.github.io/jev-email-triage/">the email-triage journey</a>.
 </p>
 
-<div class="callout">Every page in this repo puts the measured latency on screen. The source videos show demos from machines close to the model. From this machine one Jev decision takes 300 to 1,200 ms. A demo that hides that number is a demo of the animation, not of Jev.</div>
+<div class="callout">Every page in this repo puts measured latency on screen. Typical calls on this machine land in roughly 200 to 1,200 ms, with slower outliers during gateway congestion. Doom Level 3's 50-seed final evaluation had a 260 ms median episode mean and 346 ms median episode p95. A demo that hides this number is a demo of the animation, not of Jev.</div>
+
+<section class="feature">
+  <a href="doom/video.html"><img src="video/jev_doom_level3.jpg" alt="Jev chooses shoot in ViZDoom Level 3 in 231 milliseconds with probability 0.96"></a>
+  <div>
+    <h2>Featured: Jev plays ViZDoom</h2>
+    <p>Aim, survive, handle pressure, then combine combat with navigation. The new Level 3 page pairs a 24-second video with the recorded action, probability, tactical reason and response time.</p>
+    <div class="metrics"><div class="metric"><b>41/50</b>held-out goals reached</div><div class="metric"><b>260 ms</b>median episode mean</div><div class="metric"><b>346 ms</b>median episode p95</div><div class="metric"><b>0</b>final-run fallbacks</div></div>
+    <p><a href="doom/video.html"><b>Watch the video and inspect the decisions →</b></a><br><a href="doom/doom.html">Open the interactive replay</a> · <a href="https://github.com/az9713/jev-projects/tree/main/doom">Read the case study</a></p>
+  </div>
+</section>
 
 <h2>What was built: one page per project</h2>
 <p>Ten pieces. Nine use Node directly; Doom uses Python for ViZDoom and a tiny Node worker so it shares the same Jev evaluator. Seven visual projects have an HTML page that polls <code>/state</code> and draws. This site replays measured runs because GitHub Pages cannot hold a gateway key or run the local servers.</p>
