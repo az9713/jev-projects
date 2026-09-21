@@ -90,13 +90,13 @@ Needs Node 20.6 or later and a Vercel AI Gateway key on the paid tier.
 ```
 npm install
 echo AI_GATEWAY_API_KEY=your_key > .env
-node --env-file=.env wiki/wiki.mjs          # http://localhost:3001, same shape for town, chess, sort, logs, lane
+node --env-file=.env wiki/wiki.mjs          # open localhost:3001; same shape for town, chess, sort, logs, lane
 node --env-file=.env chess/chess.mjs --check   # every project has a --check that asserts its proof condition
 node --env-file=.env probe-burst.mjs 50
 py -3.13 -m venv doom/.venv
 doom/.venv/Scripts/python -m pip install -r doom/requirements.txt
 doom/.venv/Scripts/python doom/doom.py --check  # free ViZDoom rules-vs-random check
-doom/.venv/Scripts/python doom/doom.py          # http://localhost:3007
+doom/.venv/Scripts/python doom/doom.py          # open localhost:3007
 doom/.venv/Scripts/python doom/doom.py --run jev --scenario defend --episodes 1 --headless
 doom/.venv/Scripts/python doom/doom.py --run rules --scenario defend --episodes 100 --seed 1000 --headless
 doom/.venv/Scripts/python doom/benchmark.py  # development, validation, final and pressure gates
