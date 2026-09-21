@@ -12,10 +12,10 @@ The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad,
 
 [Watch the Level 3 video and decision trace](https://az9713.github.io/jev-projects/doom/video.html) · [Open the interactive replay](https://az9713.github.io/jev-projects/doom/doom.html) · [Read the case study](doom/README.md) · [Inspect all Level 3 seeds](doom/corridor-evaluation.json)
 
-- **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
-- **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
-- **Windows feasibility:** https://az9713.github.io/jev-projects/windows-feasibility.html — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
-- **Jev Coding Reflex:** https://az9713.github.io/jev-projects/coding-reflex-spec.html — exactly where Jev enters a Codex task, what evidence it receives, how its decision resumes Codex, and the measured repair loop. [Watch the recorded Codex demonstration](https://az9713.github.io/jev-projects/coding-reflex-video.html).
+- [**Results page**](https://az9713.github.io/jev-projects/) — what each project shows, the measured numbers, and the findings.
+- [**Reliability upgrade**](https://az9713.github.io/jev-projects/reliability-upgrade.html) — what changed, why it changed, how it works, and the new evaluation evidence.
+- [**Windows feasibility**](https://az9713.github.io/jev-projects/windows-feasibility.html) — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
+- [**Jev Coding Reflex**](https://az9713.github.io/jev-projects/coding-reflex-spec.html) — exactly where Jev enters a Codex task, what evidence it receives, how its decision resumes Codex, and the measured repair loop. [Watch the recorded Codex demonstration](https://az9713.github.io/jev-projects/coding-reflex-video.html).
 
 ## The one rule
 
