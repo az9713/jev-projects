@@ -1,0 +1,45 @@
+{
+  "description": "Jev Coding Reflex: one advisory Jev review when a Codex task stops",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node --env-file=.env hooks/coding-reflex.mjs --hook",
+            "commandWindows": "node --env-file=.env hooks/coding-reflex.mjs --hook",
+            "timeout": 10,
+            "statusMessage": "Saving Jev Coding Reflex baseline"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node --env-file=.env hooks/coding-reflex.mjs --hook",
+            "commandWindows": "node --env-file=.env hooks/coding-reflex.mjs --hook",
+            "timeout": 10,
+            "statusMessage": "Recording test result"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node --env-file=.env hooks/coding-reflex.mjs --hook",
+            "commandWindows": "node --env-file=.env hooks/coding-reflex.mjs --hook",
+            "timeout": 120,
+            "statusMessage": "Running Jev Coding Reflex"
+          }
+        ]
+      }
+    ]
+  }
+}

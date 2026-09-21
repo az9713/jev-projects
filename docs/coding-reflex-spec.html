@@ -82,18 +82,18 @@
 </nav>
 
 <header>
-  <div class="eyebrow">Proposed project · specification 0.1</div>
+  <div class="eyebrow">Implemented prototype · specification 0.2</div>
   <h1>Jev Coding Reflex for Codex</h1>
   <p class="lead">A fast, advisory check that compares your instruction with Codex's actual code changes and test result before Codex declares the task complete.</p>
   <div class="status" aria-label="Project status">
-    <span class="badge proposed">Specification only</span>
+    <span class="badge proposed">Tested in Codex</span>
     <span class="badge">Codex first</span>
     <span class="badge">Solo-developer workflow</span>
     <span class="badge">Reuses hooks/verify.mjs</span>
   </div>
 </header>
 
-<div class="callout"><strong>The central idea:</strong> no pull request is required. Git already knows what Codex changed. Jev receives the task, the change since the task began, and the test outcome; it returns no more than three findings for Codex to investigate.</div>
+<div class="callout"><strong>The central idea:</strong> no pull request is required. Git already knows what Codex changed. Jev receives the task, the change since the task began, and the test outcome; it returns no more than three findings for Codex to investigate. The repository now contains a working prototype and a measured Codex run.</div>
 
 <section id="purpose">
   <h2>1. Purpose and boundary</h2>
@@ -102,7 +102,7 @@
     <article class="card"><span class="n">2</span><h3>Catch risky changes</h3><p>Flag weakened tests, exposed secrets, swallowed errors, interface changes and unrelated edits.</p></article>
     <article class="card"><span class="n">3</span><h3>Keep Codex responsible</h3><p>Jev raises concise evidence. Codex inspects the code, repairs valid findings and rejects false alarms.</p></article>
   </div>
-  <p>This is not a replacement for tests, static analysis, Git or Codex's reasoning. Version 1 does not edit files, approve dangerous operations, push code or block completion. It adds one final advisory review.</p>
+  <p>This is not a replacement for tests, static analysis, Git or Codex's reasoning. Version 1 does not edit files, approve dangerous operations or push code. When it finds an issue, the Stop hook continues the Codex turn with concise review feedback; Codex investigates and repairs or rejects the finding.</p>
 </section>
 
 <section id="workflow">
@@ -189,8 +189,24 @@ QUESTIONS
   <p>Codex inspects the finding, adds a test that proves the file remains present, reruns the tests and invokes the final check again. If no question crosses the reporting threshold, Codex tells you the task is complete and includes the clean Jev result.</p>
 </section>
 
+<section id="measured">
+  <h2>5. Measured inside Codex</h2>
+  <p>A persistent Codex CLI session ran the dry-run example against a disposable Git repository. Codex was deliberately told to omit the requested test on its first completion attempt, creating a known fault for the hook.</p>
+  <table>
+    <thead><tr><th>Checkpoint</th><th>Jev decision</th><th>Latency</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>First Stop</td><td><code>behavior_untested</code> 0.83; <code>task_incomplete</code> 0.80</td><td>1,188 ms</td><td>$0.000069846</td></tr>
+      <tr><td>Codex repair</td><td>Added an end-to-end dry-run test and reran <code>npm test</code></td><td>—</td><td>—</td></tr>
+      <tr><td>Second Stop</td><td>No actionable findings</td><td>738 ms</td><td>$0.000128184</td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><strong>Observed result:</strong> Jev interrupted the incomplete first completion, Codex added the missing test, the test suite passed, and the second Jev review was clean. Total Jev cost was $0.00019803.</div>
+  <p>This proves the Codex → Jev → Codex continuation loop for one controlled omission. It does not establish general accuracy. The full privacy-safe record is <a href="https://github.com/az9713/jev-projects/blob/main/eval/coding-reflex-codex.json"><code>eval/coding-reflex-codex.json</code></a>.</p>
+  <p><strong>Runtime finding:</strong> on this installed Codex build, lifecycle hooks ran in persistent sessions but were skipped by <code>codex exec --ephemeral</code>. The experiment therefore used a persistent session.</p>
+</section>
+
 <section id="questions">
-  <h2>5. Jev questions and output contract</h2>
+  <h2>6. Jev questions and output contract</h2>
   <p>The existing twelve diff questions remain the foundation. Version 1 adds task-completion questions only where the task, diff and test outcome provide useful evidence.</p>
   <table>
     <thead><tr><th>Question group</th><th>Examples</th></tr></thead>
@@ -220,7 +236,7 @@ QUESTIONS
 </section>
 
 <section id="trust">
-  <h2>6. Trust boundary and failure behavior</h2>
+  <h2>7. Trust boundary and failure behavior</h2>
   <div class="grid">
     <article class="card"><span class="n">A</span><h3>Redact before sending</h3><p>A deterministic local pass replaces likely credential values with typed markers. The local detector still reports the potential secret.</p></article>
     <article class="card"><span class="n">B</span><h3>Respect repository scope</h3><p>The collector reads only files reported by Git under the active repository and applies file-size and total-input limits.</p></article>
@@ -230,7 +246,7 @@ QUESTIONS
 </section>
 
 <section id="evaluation">
-  <h2>7. Evaluation before installation</h2>
+  <h2>8. Evaluation beyond the prototype</h2>
   <p>The hook should not be enabled merely because one demonstration looks plausible. Build 30–50 labelled task-change pairs with both defects and clean controls.</p>
   <table>
     <thead><tr><th>Case family</th><th>Representative case</th><th>Expected result</th></tr></thead>
@@ -252,7 +268,7 @@ QUESTIONS
 </section>
 
 <section id="plan">
-  <h2>8. Minimal implementation plan</h2>
+  <h2>9. Roadmap from the prototype</h2>
   <ol>
     <li><strong>Extend the existing verifier input:</strong> accept task text and test outcome in addition to the diff.</li>
     <li><strong>Add a thin Codex adapter:</strong> record the baseline at task start, capture test-result metadata after tool use and run one advisory Jev check at task stop.</li>
@@ -265,7 +281,7 @@ QUESTIONS
 </section>
 
 <section id="done">
-  <h2>9. Definition of done</h2>
+  <h2>10. Definition of done</h2>
   <ul class="checklist">
     <li>A Codex task can begin and end without the user running Git commands manually.</li>
     <li>The collected evidence includes the instruction, tracked changes, new text files and test outcome.</li>
@@ -279,7 +295,7 @@ QUESTIONS
 </section>
 
 <footer>
-  <p><strong>Status:</strong> proposed on 2026-09-20. No Codex hook is installed by this specification. The existing implementation remains <a href="verify.html"><code>hooks/verify.mjs</code></a>.</p>
+  <p><strong>Status:</strong> prototype implemented and tested on 2026-09-20. The repository-local hook is configured in <code>.codex/hooks.json</code> and requires Codex hook trust before normal use.</p>
   <p>Integration reference: <a href="https://learn.chatgpt.com/docs/hooks">Codex hooks documentation</a>.</p>
 </footer>
 </main>

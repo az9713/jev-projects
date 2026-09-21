@@ -35,6 +35,7 @@ Every page puts measured latency on screen. Compact successful choices in these 
 | `doom/` | [ViZDoom stress suite](https://az9713.github.io/jev-projects/doom/doom.html) | 3007 | Aim, defend, and navigate a combat corridor, each with harder pressure modes | Level 2: 50/50 final survival. Level 3: 41/50 reached the armor with median 6 kills, zero fallbacks and $0.00179 mean cost; corridor pressure: 8/10 |
 | `hooks/skill-router.mjs` | – | – | Which of your Claude Code skills fits the prompt | 6/6 test prompts, 147 skills as options, 9.9k tokens, $0.0004 per prompt |
 | `hooks/verify.mjs` | – | – | 12 yes/no and score questions about a git diff | secret, test_weakened, debug_left fired on the synthetic diff; risk 2.99 of 3 |
+| `hooks/coding-reflex.mjs` | [Codex specification and measured run](https://az9713.github.io/jev-projects/coding-reflex-spec.html) | – | Compare the user's task, Git diff and test evidence when Codex tries to finish | Controlled omission: first Stop flagged untested behavior 0.83 and incomplete task 0.80 in 1,188 ms; Codex added the test; second Stop was clean in 738 ms; $0.000198 total |
 
 ### Folder rule
 

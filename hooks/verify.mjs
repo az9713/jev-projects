@@ -15,11 +15,11 @@ function chunks(diff) {
   return out.length ? out : [""];
 }
 
-export async function verify(diff, askFn = ask, threshold = 0.5) {
+export async function verifyWithQuestions(diff, questions, context = {}, askFn = ask, threshold = 0.5) {
   const parts = chunks(diff), bools = new Map(), scoresById = new Map();
   let ms = 0, usd = 0, tokens = 0, attempts = 0;
   for (let i = 0; i < parts.length; i++) {
-    const r = await askFn({ git_diff: parts[i], part: i + 1, parts: parts.length }, QUESTIONS);
+    const r = await askFn({ ...context, git_diff: parts[i], part: i + 1, parts: parts.length }, questions);
     ms += r.ms ?? 0; usd += r.usd ?? 0; tokens += r.tokens ?? 0; attempts += r.attempts ?? 1;
     for (const [id, a] of Object.entries(r.answers)) {
       if (a.type === "boolean" || Number.isFinite(a.probability)) bools.set(id, Math.max(bools.get(id) ?? 0, a.probability));
@@ -29,8 +29,12 @@ export async function verify(diff, askFn = ask, threshold = 0.5) {
       }
     }
   }
-  const fired = [...bools].filter(([, p]) => p > threshold).map(([id, p]) => ({ id, p, q: QUESTIONS[id].instructions }));
+  const fired = [...bools].filter(([, p]) => p > threshold).map(([id, p]) => ({ id, p, q: questions[id].instructions }));
   return { fired, scores: [...scoresById.values()], ms, usd, tokens, attempts, chars: diff.length, chunks: parts.length };
+}
+
+export async function verify(diff, askFn = ask, threshold = 0.5) {
+  return verifyWithQuestions(diff, QUESTIONS, {}, askFn, threshold);
 }
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 1 << 26 });

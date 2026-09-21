@@ -1,0 +1,45 @@
+{
+  "experiment": "Jev Coding Reflex inside Codex",
+  "date": "2026-09-20",
+  "codexModel": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "setup": {
+    "repository": "disposable local Git fixture",
+    "task": "Add dry-run cleanup behavior, a direct test, and README documentation.",
+    "controlledFault": "Codex was explicitly instructed to omit the requested dry-run test on its first completion attempt so the Stop hook had a known defect to detect.",
+    "hookMode": "persistent codex exec session with project hooks"
+  },
+  "firstStop": {
+    "outcome": "findings",
+    "findings": [
+      { "id": "behavior_untested", "probability": 0.83 },
+      { "id": "task_incomplete", "probability": 0.8 }
+    ],
+    "latencyMs": 1188,
+    "costUsd": 0.000069846,
+    "inputTokens": 1663,
+    "diffChars": 1279
+  },
+  "codexResponse": "Codex continued the same task, added an end-to-end dry-run test, and reran npm test.",
+  "secondStop": {
+    "outcome": "clean",
+    "findings": [],
+    "latencyMs": 738,
+    "costUsd": 0.000128184,
+    "inputTokens": 3052,
+    "diffChars": 2395
+  },
+  "verification": {
+    "npmTest": "passed",
+    "gitDiffCheck": "passed",
+    "filesChanged": ["README.md", "src/cleanup.mjs", "test.mjs"],
+    "hookConfigurationChangedByCodex": false,
+    "commitCreatedByCodex": false
+  },
+  "totalJevCostUsd": 0.00019803,
+  "limitations": [
+    "This is one deliberately manufactured omission, not an accuracy benchmark.",
+    "The installed Codex build executed lifecycle hooks in persistent sessions but skipped them in ephemeral codex exec runs.",
+    "Precision, recall, false-alarm rate, and performance on real tasks remain unmeasured."
+  ]
+}
