@@ -18,7 +18,7 @@ The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad,
 
 ## The one rule
 
-Every page puts the measured latency on screen. The videos show demos from machines close to the model. From this machine one Jev decision takes 300 to 1,200 ms. A demo that hides that number is a demo of the animation, not of Jev.
+Every page puts measured latency on screen. Compact successful choices in these recorded runs commonly took about 235 to 465 ms; Doom Level 3's 50-seed final evaluation had a 260 ms median episode mean and a 346 ms median episode p95. Bursts, very large option sets and gateway retries produced one- to multi-second tails. A demo that hides those numbers is a demo of the animation, not of Jev.
 
 ## Projects
 
