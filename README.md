@@ -15,6 +15,7 @@ The projects come from four YouTube videos about Jev (Matthew Berman, Ray Amjad,
 - **Results page:** https://az9713.github.io/jev-projects/ — what each project shows, the measured numbers, and the findings.
 - **Reliability upgrade:** https://az9713.github.io/jev-projects/reliability-upgrade.html — what changed, why it changed, how it works, and the new evaluation evidence.
 - **Windows feasibility:** https://az9713.github.io/jev-projects/windows-feasibility.html — which unimplemented video projects can run on this machine, their real blockers, and the recommended build order.
+- **Jev Coding Reflex specification:** https://az9713.github.io/jev-projects/coding-reflex-spec.html — how a proposed Codex hook would compare the task, Git diff and test result, with a complete dry-run example and evaluation gates.
 
 ## The one rule
 
