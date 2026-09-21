@@ -190,7 +190,7 @@
   <p>Whenever Codex runs a recognized test command, <code>PostToolUse</code> records the command and its output.</p>
   <p>When Codex tries to finish, the <code>Stop</code> hook runs:</p>
   <pre><code>node --env-file=.env hooks/coding-reflex.mjs --hook</code></pre>
-  <p>This wiring is in <a href="https://github.com/az9713/jev-projects/blob/main/.codex/hooks.json"><code>.codex/hooks.json</code></a>.</p>
+  <p>The disabled example wiring is in <a href="https://github.com/az9713/jev-projects/blob/main/.codex/hooks.example.json"><code>.codex/hooks.example.json</code></a>. Copy it to <code>.codex/hooks.json</code> to activate the hook.</p>
 
   <h3 class="subhead">2. This is the exact point where Jev enters</h3>
   <p>The Stop hook calls:</p>
@@ -453,7 +453,7 @@ QUESTIONS
 </section>
 
 <footer>
-  <p><strong>Status:</strong> prototype implemented and tested on 2026-09-20. The repository-local hook is configured in <code>.codex/hooks.json</code> and requires Codex hook trust before normal use.</p>
+  <p><strong>Status:</strong> prototype implemented and tested on 2026-09-20. The repository-local hook is disabled by default; its configuration is preserved in <code>.codex/hooks.example.json</code> and requires Codex hook trust when activated.</p>
   <p>Integration reference: <a href="https://learn.chatgpt.com/docs/hooks">Codex hooks documentation</a>.</p>
 </footer>
 </main>
