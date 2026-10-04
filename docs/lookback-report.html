@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Prompt look-back report</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --a1:#fb923c; --a2:#2dd4bf; --line:#334155; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 64px; }
+  a { color:var(--a2); }
+  h1 { font-size:1.9rem; line-height:1.25; margin:.2em 0 .3em; }
+  h2 { font-size:1.25rem; margin:2em 0 .6em; color:var(--a1); }
+  p, li { color:var(--text2); }
+  .meta { color:var(--muted); font-size:.9rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:14px 0; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:16px 0; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .stat b { display:block; font-size:1.6rem; color:var(--a2); }
+  .stat span { color:var(--muted); font-size:.85rem; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:.85rem; }
+  td.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .bar { height:10px; border-radius:5px; background:var(--a1); }
+  .bar.dec { background:var(--a2); }
+  .track { background:var(--bg); border-radius:5px; min-width:120px; }
+  .callout { border-left:4px solid var(--a1); background:var(--card); padding:12px 16px; border-radius:0 10px 10px 0; margin:18px 0; }
+  code { background:var(--bg); padding:1px 5px; border-radius:4px; font-size:.9em; }
+</style>
+</head>
+<body>
+<main>
+<p class="meta"><a href="index.html">All projects</a> · <a href="lookback.html">lookback build</a></p>
+<h1>Prompt look-back report: what a decision model says about the author's prompts</h1>
+<p class="meta">Run on 2026-10-04 · <code>lookback/lookback.mjs</code> · Model <code>typesafe-ai/jev</code> through the Vercel AI Gateway · Prompt text is not published on this page</p>
+
+<div class="callout"><b>Result.</b> The prompt pattern is healthy. 82% of the 113 prompts ask for research or for something to be built, and those need a language model. Only about 11% are decision-type steps at probability 0.6 or more, so there is little at the prompt level to move to a cheap decision model. No change to how the prompts are written is needed.</div>
+
+<div class="stats">
+  <div class="stat"><b>20</b><span>most recent sessions</span></div>
+  <div class="stat"><b>113</b><span>prompts labelled, 0 failed</span></div>
+  <div class="stat"><b>$0.0025</b><span>total cost, about $0.00002 per prompt</span></div>
+  <div class="stat"><b>12</b><span>decision-type at p ≥ 0.6 (10.6%)</span></div>
+</div>
+
+<h2>1. Method</h2>
+<p>The script reads the plain-text user prompts from the 20 most recent Claude Code session files on one machine. It skips meta lines, command tags, tool results and prompts shorter than 8 characters. Each prompt, cut to its first 300 characters, goes to Jev as one choice question: "What kind of step is this request from a user to a coding agent?" There are seven kinds. Four are decision kinds: classify_route, pick_from_list, yes_no_check and score_rank. A prompt counts as a candidate when Jev picks a decision kind at probability 0.6 or more.</p>
+
+<h2>2. What kind of prompts</h2>
+<div class="card">
+<table>
+<tr><th>Kind</th><th class="n">Prompts</th><th class="n">Share</th><th>&nbsp;</th></tr>
+<tr><td>research_or_multistep</td><td class="n">53</td><td class="n">46.9%</td><td class="track"><div class="bar" style="width:46.9%"></div></td></tr>
+<tr><td>write_or_build</td><td class="n">40</td><td class="n">35.4%</td><td class="track"><div class="bar" style="width:35.4%"></div></td></tr>
+<tr><td>yes_no_check</td><td class="n">12</td><td class="n">10.6%</td><td class="track"><div class="bar dec" style="width:10.6%"></div></td></tr>
+<tr><td>pick_from_list</td><td class="n">4</td><td class="n">3.5%</td><td class="track"><div class="bar dec" style="width:3.5%"></div></td></tr>
+<tr><td>chat</td><td class="n">2</td><td class="n">1.8%</td><td class="track"><div class="bar" style="width:1.8%"></div></td></tr>
+<tr><td>score_rank</td><td class="n">1</td><td class="n">0.9%</td><td class="track"><div class="bar dec" style="width:0.9%"></div></td></tr>
+<tr><td>classify_route</td><td class="n">1</td><td class="n">0.9%</td><td class="track"><div class="bar dec" style="width:0.9%"></div></td></tr>
+</table>
+<p class="meta">Teal bars are decision kinds: 18 of 113 prompts (15.9%). Orange bars are the other kinds. Shares add to 100%.</p>
+</div>
+<p>The two large kinds, research and build, total 93 prompts (82.3%). They ask for investigation, explanation, a document, code or a multi-step task. A decision model that only picks from a given list cannot do them.</p>
+
+<h2>3. The 12 decision-type prompts, read by hand</h2>
+<p>Jev labels the kind of request. It does not check whether it could answer the request. I read the 12 prompts that passed p ≥ 0.6 and sorted them by whether a Jev call could do the job when given the right evidence.</p>
+<div class="card">
+<table>
+<tr><th>Verdict</th><th class="n">Prompts</th><th>What they are</th></tr>
+<tr><td>Plausible Jev job</td><td class="n">3</td><td>Status checks on finished work ("was it tested", "is it done"), and a lookup in a list of installed plugins. A yes/no or pick question works if Jev gets the evidence: test output, a diff, or the list.</td></tr>
+<tr><td>Possible, weak</td><td class="n">2</td><td>A conflict check between two pasted statements, and a confirmation about a list of steps whose text the script did not see. Not tested.</td></tr>
+<tr><td>Not a Jev job</td><td class="n">7</td><td>Product-research questions (4), a request to review figures (1), a question about whether the agent can do something (1), and a question about the agent's previous reply (1). They need knowledge, looking at a file, or context the script does not send.</td></tr>
+</table>
+</div>
+
+<h2>4. What this means</h2>
+<ul>
+  <li>The usage pattern is fine. Most prompts ask for work that needs a language model, and that is what a coding agent is for.</li>
+  <li>At the prompt level, Jev could take over about 3 of 113 prompts (2.7%) by my reading, and only with evidence supplied. The saving is small.</li>
+  <li>The better place for Jev is inside the agent's own steps: which file to open, which skill to load, did the tests run. The existing <code>skill-router</code>, <code>verify</code> and <code>coding-reflex</code> builds work there.</li>
+</ul>
+
+<h2>5. Limits of this report</h2>
+<ul>
+  <li>One run, one machine, one day, 20 sessions, 113 prompts. The shares are not stable estimates.</li>
+  <li>Jev saw only the first 300 characters of each prompt and none of the replies or files. A short follow-up is labelled without its context.</li>
+  <li>The kind labels were not compared with hand labels. Only the 12 candidates were checked, by one reader.</li>
+  <li>The script reads user prompts only. It does not read the agent's tool calls, which is where most decision steps happen. That is not built.</li>
+  <li>This page contains counts only. Prompt text, file paths, project names and personal details are left out on purpose.</li>
+</ul>
+</main>
+</body>
+</html>
