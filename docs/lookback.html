@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev lookback</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a><a href="lookback.html">lookback</a><a href="backlinks.html">backlinks</a></nav>
+<h1>Session look-back: which of your recent prompts a quick Jev call could have handled</h1>
+<p class="meta"><b>Date:</b> 2026-10-03 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/lookback/lookback.mjs">lookback/lookback.mjs</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>What kind of step each of your recent Claude Code prompts is. One choice question per prompt, with seven kinds: classify_route, pick_from_list, yes_no_check, score_rank, write_or_build, research_or_multistep, chat. The first four are decision kinds. A prompt is a Jev candidate when Jev picks a decision kind at probability 0.6 or more. The script writes <code>lookback/report.md</code> with the counts and the candidate prompts.</p>
+
+<h2>2. The questions</h2>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const PER_SESSION = 40;    // prompts read per session
+const MAX_CHARS = 300;     // characters of each prompt sent to Jev
+const WORKERS = 10;        // calls in flight
+const MIN_P = 0.6;         // a prompt is a Jev candidate when it is a decision kind with probability at least this
+const INSTRUCTIONS = "What kind of step is this request from a user to a coding agent?";</code></pre>
+
+<h2>3. Run it</h2>
+<pre><code>node --env-file=.env lookback/lookback.mjs --sessions 20 --dry   # count only, sends nothing
+node --env-file=.env lookback/lookback.mjs --sessions 20
+node lookback/lookback.mjs --check                                # free</code></pre>
+<p>The prompts, each cut to 300 characters, go to the gateway. Run <code>--dry</code> first. The report is in <code>.gitignore</code> because it contains your prompts.</p>
+
+<h2>4. The check, verbatim</h2>
+<pre><code>ok: extractor keeps 2 of 7 lines and respects the limit</code></pre>
+<p>The check is free and calls no model. It tests the prompt extractor on a fixture: it keeps plain user prompts and skips meta lines, command tags, tool results and prompts shorter than 8 characters.</p>
+
+<h2>5. Findings</h2>
+<ul>
+  <li>The dry run on 2026-10-03 found 127 prompts in the 20 most recent sessions on the author's machine.</li>
+  <li>Not done: a live run. No kind counts, candidate list, cost or latency have been measured, and Jev's labels have not been compared with hand labels.</li>
+  <li>Jev labels a request from its first 300 characters only. It does not see the replies or the files, so a short follow-up like "do the second one" is labelled without its context.</li>
+</ul>
+<div class="callout">The extractor check and the dry run ran once on one machine on 2026-10-03.</div>
+</main>
+</body>
+</html>

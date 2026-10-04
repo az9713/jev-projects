@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Jev backlinks</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1; --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf; --border:#334155; --err:#f87171; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; line-height:1.2; color:var(--accent2); margin:0 0 8px; }
+  h2 { font-size:21px; color:var(--accent); margin:44px 0 12px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:var(--text2); }
+  a { color:var(--accent2); }
+  .meta { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .meta b { color:var(--text); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:0.92em; background:var(--card); padding:1px 5px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.45; color:var(--text); }
+  pre code { background:none; padding:0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:14.5px; }
+  th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--text); }
+  .callout { background:var(--card); border-left:4px solid var(--accent2); border-radius:6px; padding:10px 14px; margin:16px 0; }
+  .warn { border-left-color:var(--err); }
+  nav { font-size:14px; color:var(--muted); margin-bottom:20px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="index.html">All projects</a><a href="probe-burst.html">probe-burst</a><a href="wiki.html">wiki</a><a href="town.html">town</a><a href="chess.html">chess</a><a href="sort.html">sort</a><a href="logs.html">logs</a><a href="lane.html">lane</a><a href="skill-router.html">skill-router</a><a href="verify.html">verify</a><a href="lookback.html">lookback</a><a href="backlinks.html">backlinks</a></nav>
+<h1>Backlinks: which other notes should this note link to</h1>
+<p class="meta"><b>Date:</b> 2026-10-03 &nbsp;·&nbsp; <b>Code:</b> <a href="https://github.com/az9713/jev-projects/blob/main/backlinks/backlinks.mjs">backlinks/backlinks.mjs</a> &nbsp;·&nbsp; <b>Model:</b> <code>typesafe-ai/jev</code> through the Vercel AI Gateway</p>
+
+<h2>1. What Jev decides</h2>
+<p>For each markdown note in a folder, which one other note the reader should open next, or none. One choice question per note. Every other note is an option; its title is the option name and its first line (cut to 160 characters) is the rubric. Notes the note already links to are left out. Jev returns a probability for each option; the three best at probability 0.15 or more become suggestions. The script writes <code>backlinks/report.md</code> and never edits a note.</p>
+
+<h2>2. The questions</h2>
+<p>The settings, from the top of backlinks.mjs.</p>
+<pre><code>// ---- Review these. Everything else is plumbing. ----
+const MAX_NOTES = 255;     // Jev accepts 255 options; ponytail: run per sub-folder when a vault is larger
+const NOTE_CHARS = 1500;   // characters of the note sent as the question
+const DESC_CHARS = 160;    // characters of each other note sent as its option description
+const MIN_P = 0.15;        // a suggestion needs at least this probability
+const INSTRUCTIONS = "Which one other note is the most useful for the reader of this note to open next? Pick none if no note is closely related.";</code></pre>
+
+<h2>3. Run it</h2>
+<pre><code>node --env-file=.env backlinks/backlinks.mjs C:/path/to/notes --top 3
+node --env-file=.env backlinks/backlinks.mjs --check</code></pre>
+<p>The note text goes to the gateway. The report is in <code>.gitignore</code> because it can contain your note titles.</p>
+
+<h2>4. The check, verbatim</h2>
+<pre><code>sourdough starter → [["baking bread",0.99]]
+kubernetes pods → [["docker containers",0.99]]
+ok: both known pairs link</code></pre>
+<p>The check writes six synthetic notes to a temporary folder: sourdough starter, baking bread, kubernetes pods, docker containers, tomato gardening, cat care.</p>
+
+<h2>5. Findings</h2>
+<ul>
+  <li>Both known pairs linked at probability 0.99 on 2026-10-03. Six synthetic notes with clearly separate topics are an easy case; this check does not show how well Jev separates close topics.</li>
+  <li>Not done: a run on a real notes folder. No real-vault result, cost or latency has been measured.</li>
+  <li>Ceiling: 255 notes per run, the same 255-option cap the wiki race found (255 accepted, 256 refused). A larger vault needs one run per sub-folder.</li>
+  <li>Two notes with the same file name make the options ambiguous, so the script stops with an error.</li>
+</ul>
+<div class="callout">The check ran once on one machine on 2026-10-03 through the Vercel AI Gateway.</div>
+</main>
+</body>
+</html>
